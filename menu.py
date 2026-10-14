@@ -10,11 +10,26 @@ def pedirNumero(mensaje): #se asegura que no hayan entradas raras como letras al
 
 
 def registro(): #permite crear una lista con los datos primarios para crear un objeto ya sea de tipo operador o de tipo usuario
-    nombre = input("Ingrese su nombre: ")
-    apellido = input("Ingrese su apellido: ")
+    nombre = input("Ingrese su nombre (mínimo 3 letras, sin números, espacios ni símbolos): ")
+    while len(nombre) < 3 or not nombre.isalpha(): #el metodo isalpha lo que hace es devolver true si el metodo solo posee letras sin ningun caracter especial como $ o !
+        nombre = input("Nombre no válido, ingréselo de nuevo: ")
+
+    apellido = input("Ingrese su primer apellido (mínimo 3 letras, sin números, espacios ni símbolos): ")
+    while len(apellido) < 3 or not apellido.isalpha():
+        apellido = input("Apellido no válido, ingréselo de nuevo: ")
+
     cedula = pedirNumero("Digite su cédula: ")
-    nombreUsuario = input("Ingrese su nombre de usuario: ")
-    contraseña = input("Ingrese su contraseña: ")
+    while cedula < 100000:
+        cedula = pedirNumero("Cédula no válida (mínimo 6 dígitos), ingrésela de nuevo: ")
+
+    nombreUsuario = input("Ingrese su nombre de usuario (mínimo 3 caracteres, sin espacios): ")
+    while len(nombreUsuario) < 3 or " " in nombreUsuario:
+        nombreUsuario = input("Nombre de usuario muy corto o con espacios, ingrese otro: ")
+
+    contraseña = input("Ingrese su contraseña (mínimo 5 caracteres, sin espacios): ")
+    while len(contraseña) < 5 or " " in contraseña:
+        contraseña = input("Contraseña muy corta o con espacios, ingrese otra: ")
+
     return nombre, apellido, cedula, nombreUsuario, contraseña
 
 
@@ -118,4 +133,6 @@ while True: #menu principal
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
             menuOperador(Op, usuarios, operadores)
     else:
+        print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
+        print ("="*50)
