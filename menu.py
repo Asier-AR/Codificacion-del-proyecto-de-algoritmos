@@ -10,11 +10,26 @@ def pedirNumero(mensaje): #se asegura que no hayan entradas raras como letras al
 
 
 def registro(): #permite crear una lista con los datos primarios para crear un objeto ya sea de tipo operador o de tipo usuario
-    nombre = input("Ingrese su nombre: ")
-    apellido = input("Ingrese su apellido: ")
-    cedula = pedirNumero("Digite su cédula: ")
-    nombreUsuario = input("Ingrese su nombre de usuario: ")
-    contraseña = input("Ingrese su contraseña: ")
+    nombre = input("Ingrese su nombre (mínimo 3 letras, sin números, espacios ni símbolos): ")
+    while len(nombre) < 3 or not nombre.isalpha(): #el metodo isalpha lo que hace es devolver true si el metodo solo posee letras sin ningun caracter especial como $ o !
+        nombre = input("Nombre no válido, ingréselo de nuevo: ")
+
+    apellido = input("Ingrese su primer apellido (mínimo 3 letras, sin números, espacios ni símbolos): ")
+    while len(apellido) < 3 or not apellido.isalpha():
+        apellido = input("Apellido no válido, ingréselo de nuevo: ")
+
+    cedula = pedirNumero("Digite su cédula (debe contener minimo 6 digitos y maximo 10 digitos): ")
+    while len(str(cedula))<6 or len(str(cedula))>10 or "-" in str(cedula):
+        cedula = pedirNumero("Cédula no válida (mínimo 6 dígitos y maximo 10), ingrésela de nuevo: ")
+
+    nombreUsuario = input("Ingrese su nombre de usuario (mínimo 3 caracteres, sin espacios): ")
+    while len(nombreUsuario) < 3 or " " in nombreUsuario:
+        nombreUsuario = input("Nombre de usuario muy corto o con espacios, ingrese otro: ")
+
+    contraseña = input("Ingrese su contraseña (mínimo 5 caracteres, sin espacios): ")
+    while len(contraseña) < 5 or " " in contraseña:
+        contraseña = input("Contraseña muy corta o con espacios, ingrese otra: ")
+
     return nombre, apellido, cedula, nombreUsuario, contraseña
 
 
@@ -61,14 +76,14 @@ def menuUsuario(Us): #es el menu de los usuarios a dia de hoy esta en proceso
             break
 
 usuarios = { #diccionario de objetos de clase usuario
-    1001: usuario("Ana", "Pérez", 1001, "ana", "ana123"),
-    1002: usuario("Luis", "Gómez", 1002, "luis", "luis123", sanciones=True, objetosReservados=["Balón", "Raqueta"]),
-    1003: usuario("Marta", "Rojas", 1003, "marta", "marta123", objetosReservados=["Ajedrez"]),
+    1398765820: usuario("Ana", "Pérez", 1001, "ana", "ana123"),
+    1002256804: usuario("Luis", "Gómez", 1002, "luis", "luis123", sanciones=True, objetosReservados=["Balón", "Raqueta"]),
+    1003456789: usuario("Marta", "Rojas", 1003, "marta", "marta123", objetosReservados=["Ajedrez"]),
 }
 
 operadores = { #diccionario de objetos de clase operador
-    1: Operador("Admin", "Sistema", 1, "admin", "1234"),
-    2: Operador("Carlos", "Díaz", 2, "carlos", "op2024"),
+    1098736417: Operador("Admin", "Sistema", 1, "admin", "1234"),
+    2239467890: Operador("Carlos", "Díaz", 2, "carlos", "op2024"),
 }
 
 while True: #menu principal
@@ -118,4 +133,6 @@ while True: #menu principal
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
             menuOperador(Op, usuarios, operadores)
     else:
+        print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
+        print ("="*50)
