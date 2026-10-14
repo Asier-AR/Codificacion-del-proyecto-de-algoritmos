@@ -1,135 +1,143 @@
 class persona:
-    def __init__(self, nombre="", apellido="", cedula=0):
-        self._nombre=nombre
-        self._apellido=apellido
-        self._cedula=cedula
-    def registro(self):
-        
-        self._nombre=str(input("Ingrese su nombre: "))
-        self._apellido=str(input("Ingrese su apellido: "))
-        self._cedula=int(input("Digite su cedula: "))
-        return {self._cedula:{"Nombre":self._nombre, "Apellido":self._apellido, "Cedula": self._cedula}} #devuelve un diccionario cuyo valor central es la cedula
+    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""): #constructor de la clase persona
+        self._nombre = nombre
+        self._apellido = apellido
+        self._cedula = cedula
+        self._nombreUsuario = nombreUsuario
+        self._contraseña = contraseña
 
-        
-
-class usuario(persona):
-    def __init__(self, nombre="", apellido="", cedula=0, sanciones=False, objetosReservados=None): #constructor
-        super().__init__(nombre, apellido, cedula)
-        if objetosReservados==None:
-            objetosReservados=[] #para evitar comportamientos inesperados por la mutabilidad de las listas
-        self._Sancion=sanciones
-        self._ObjetosReservados=objetosReservados
-
-    def registro(self, registrados): #registra un usuario nuevo
-        datos=super().registro()
-        self._Sancion=False
-        self._ObjetosReservados=[]
-        for usuario in registrados:
-            if self._cedula in usuario:
-                print("Cedula ya registrada cancelando proceso")
-                return None 
-        return{self._cedula:{"Nombre":self._nombre, "Apellido":self._apellido, "Cedula": self._cedula,"Sancion":self._Sancion, "Objetos reservados": self._ObjetosReservados}} #devuelve un diccionario cuyo valor central es la cedula
-
-    
-class Operador(persona): #clase que hereda los metodos de la clase persona
-    def __init__(self, nombre="", apellido="", cedula=0, contraseñaCuenta="", nombreUsuario=""): #constructor
-        super().__init__(nombre, apellido, cedula) #hereda los atributos nombre, apellido, cedula de la clase persona
-        self.nombreUsuario=nombreUsuario
-        self.contraseñaCuenta=contraseñaCuenta
-
-    def iniciarSesion(self, operadores):
-        nombreUsuario = str (input("Ingrese su nombre de usuario: ")) #pide el nombre de usuario
-        contraseñaCuenta =str(input("Ingrese su contraseña: ")) #pide la contraseña
-        for operador in operadores:  # recorre la lista de operadores
-            for cedula, datos in operador.items():  # analiza cada diccionario
-                if datos["Nombre de Usuario"] == nombreUsuario and datos["Contraseña"] == contraseñaCuenta: #analiza la contraseña y los usuarios
-                    print(f"Inicio de sesión exitoso. Bienvenido {datos['Nombre']} {datos['Apellido']}.")
-                    return True #devuelve true si el usuario y la contraseña son correctos
-        print("Usuario o contraseña incorrectos.") #si son incorrectos devuelve false
+    def iniciarSesion(self): #creacion del metodo iniciar sesion
+        for j in range(4):
+            nombreUsuario = input("Ingrese su nombre de usuario: ")
+            contraseña = input("Ingrese su contraseña: ")
+            if nombreUsuario == self._nombreUsuario and contraseña == self._contraseña:
+                print(f"Inicio de sesión exitoso, bienvenido {self._nombre} {self._apellido}")
+                return True
+            print(f"Usuario o contraseña no válidos. Intentos restantes: {3 - j}")
+        print("Número de intentos agotados, volviendo al menú")
         return False
+            
 
 
-    def registro(self, operadores):
-        # Llamamos al registro de la clase padre
-        datos = super().registro()
-        # Pedimos los atributos propios del operador
-        nombreUsuario = str(input("Ingrese el nombre de usuario del operador: "))
-        contraseñaCuenta = str(input("Ingrese la contraseña del operador: "))
-
-        # Verificar duplicados
-        for operador in operadores:
-            # Cada "operador" es un diccionario con la forma {cedula: datos}
-            for cedula, info in operador.items(): #recorre las libreria totamndo el indice y sus datos
-                if self._cedula == cedula:
-                    print("Cédula ya registrada, cancelando proceso")
-                    return None
-                while info["Nombre de Usuario"] == nombreUsuario:
-                    print("Usuario ya existente, prueba con otro nombre o escribe 0 si decide salir del proceso")
-                    nombreUsuario = str(input("Ingrese un nombre de usuario diferente: "))
-                    if nombreUsuario=="0":
-                        print("volviendo al menu de operador")
-                        return
-                
+class usuario(persona): #clase usuario hija de la clase persona
+    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña="", sanciones=False, objetosReservados=None): #constructor de la clase usuario
+        super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
+        self._sancion = sanciones
+        self._objetosReservados = objetosReservados or [] #se se crea una lista de objetos reservados si se incluye una en el constructor o si no la crea vacia
 
 
-        datos[self._cedula]["Nombre de Usuario"] = nombreUsuario
-        datos[self._cedula]["Contraseña"] = contraseñaCuenta
-        return datos  # Devuelve un diccionario con los datos del operador
-        
+class Operador(persona): #clae operador hija de la clase persona
+    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
+        super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
+    # sin iniciarSesion: la hereda de persona
 
-    def buscador(self, registrados):
-        cedulaBuscar = int(input("Ingrese la cédula que desea buscar: "))
-        for usuario in registrados:
-            if cedulaBuscar in usuario:  # la cédula es la clave
-                print(f"Usuario encontrado: {usuario[cedulaBuscar]}")
-                return usuario[cedulaBuscar]
-        print("Usuario no encontrado.")
-        return None
+    def buscador(self, registrados): #metodo para buscar usuarios en la base de datos
+        try:
+            cedulaBuscar = int(input("Ingrese la cédula que desea buscar: "))
+        except ValueError:
+            print("Ingrese solo números.")
+            return -1
+        u = registrados.get(cedulaBuscar)
+        if u is None:
+            print("Usuario no encontrado.")
+            return -1
+        print("Usuario encontrado:")
+        print(f"Nombre: {u._nombre}")
+        print(f"Apellido: {u._apellido}")
+        print(f"Cédula: {u._cedula}")
+        print(f"Sanción: {u._sancion}")
+        print("Objetos reservados:")
+        for obj in u._objetosReservados:
+            print(f" - {obj}")
 
-    def mostrarUsuarios(self, registrados):
+    def mostrarUsuarios(self, registrados): #metodo que printea a todos los usuarios
         if not registrados:
             print("No hay usuarios registrados.")
+            return
+        for u in registrados.values():
+            print(f"Nombre: {u._nombre}")
+            print(f"Apellido: {u._apellido}")
+            print(f"Cédula: {u._cedula}")
+            print(f"Sanción: {u._sancion}")
+            if u._objetosReservados:
+                print("Objetos reservados:")
+                for obj in u._objetosReservados:
+                    print(f" - {obj}")
+            else:
+                print("Objetos reservados: Ninguno")
+            print("-" * 30)
+    def eliminarUsuario(self, registrados): #Metodo que elimina usuarios de la base de datos
+        try:
+            cedulaBuscar = int(input("Ingrese la cédula del usuario que desea eliminar: "))
+        except ValueError:
+            print("Ingrese solo números.")
+            return
+        u = registrados.get(cedulaBuscar)
+        if u is None:
+            print("No se encontró ningún usuario con esa cédula.")
+            return
+        print(f"¿Desea eliminar a {u._nombre} {u._apellido} (C.C. {u._cedula})?")
+        eleccion = input("Digite 1 para confirmar, 2 para cancelar: ")
+        if eleccion == "1":
+            del registrados[cedulaBuscar]
+            print("Usuario eliminado correctamente.")
+        else:
+            print("Acción cancelada.")
 
-        for usuario in registrados: #recorre todas las bibliotecas guardadas en la lista usuarios
-            for cedula, datos in usuario.items(): #toma el indice principal y los subindices de este indice
-                print(f"Nombre: {datos['Nombre']}") #imprime los datos que guarda el diccionario en "Nombre"
-                print(f"Apellido: {datos['Apellido']}") 
-                print(f"Cédula: {cedula}")  
-                print(f"Sanción: {datos['Sancion']}")
-                print(f"Objetos reservados: {', '.join(datos['Objetos reservados'])}")
-                print("-" * 30)
-
-    def eliminarUsuario(self, registrados): 
-        cedulaBuscar = int(input("Ingrese la cédula del usuario que desea eliminar: "))
-        for usuario in registrados:  # usuario es un diccionario dentro de la lista
-            if cedulaBuscar in usuario:  # verificamos si la cédula está en ese diccionario
-                print(f"¿Este es el usuario que desea eliminar?: {usuario[cedulaBuscar]}") #printea el usuario para que no se cometan errores
-                eleccion = int(input("Digite 1 si desea confirmar la acción, 2 si desea cancelar: "))
-                if eleccion == 1:
-                    registrados.remove(usuario)  # aquí eliminamos el diccionario de la lista
-                    print("Usuario eliminado correctamente.")
-                    return  #marca el fin del metodo y no se hace return de registrados porque la funcion  .remove modifica la lista registrados en memoria
-                elif eleccion==2:
-                    print("Acción cancelada.")
-                    return #marca el fin del metodo
-                else:
-                    print("opcion invalida cancelando proceso")
-                    return 
-        print("No se encontró ningún usuario con esa cédula.")
-        return #marca el fuin del metodo 
-    
+class Inventario: 
+    def __init__(self, inventario):
+        self._inventarioDisponible=inventario or {}
+        self._Nodisponible={}
+    def añadirRecurso(self, recurso):
+        if recurso._nombre in self._inventarioDisponible:
+            self._inventarioDisponible[recurso._nombre]._cantidad+=recurso.cantidad
+        else:
+            self._inventarioDisponible[recurso._nombre]=recurso
 
 
 
-            
+class recurso:
+    def __init__(self, nombre="", cantidad=0):
+        self._nombre=nombre
+        self._cantidad=cantidad
+
+    def añadir(self):
+        intentos=0
+        cantidad= int (input("Ingrese la cantidad de elementos que desea añadir: "))
         
+        while cantidad<0:
+            print("No puedes sumar una cantidad negativa ingrese una cantidad valida : ")
+            cantidad=int(input())
+            if intentos==4:
+                print("Se acabaron los intentos para escribir una cantidad valida cancelando proceso: ")
+                return 
+            intentos+=1
+        self._cantidad+=cantidad
+
+    def darBaja(self):
+        intentos=0
+        cantidad= int (input("Ingrese la cantidad de elementos que desea dar de baja: "))
+        while cantidad:
+            print("No existen tantos elementos de ese recurso ingrese otra cantidad: ")
+            cantidad=int(input())
+            if intentos==4:
+                print("Se acabaron los intentos para escribir una cantidad valida cancelando proceso: ")
+                return 
+            intentos+=1
+        self._cantidad-=cantidad
 
 
+class libro(recurso):
+    def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):
+        super().__init__(nombre, cantidad)
+        self._autor=autor
+        self._fechaPublicacion=fechaPublicacion
 
 
-        
+class equipoComputacion(recurso):
+     def __init__(self, nombre="", cantidad=0, modelo=""):
+            super().__init__(nombre, cantidad)
+            self._modelo=modelo
 
 
-
-
-                
+      
