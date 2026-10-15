@@ -30,7 +30,7 @@ usuarios = {
 }
 
 # 2. DICCIONARIO DE 25 RECURSOS (INVENTARIO)
-sistemaInventario_dict = {
+sistemaInventarioDict = {
     # Libros (10)
     "Matemáticas Discretas": libro("Matemáticas Discretas", 5, "Kenneth Rosen", "2019"),
     "Cálculo Integral": libro("Cálculo Integral", 4, "James Stewart", "2020"),
