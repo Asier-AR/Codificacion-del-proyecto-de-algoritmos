@@ -75,7 +75,6 @@ def menuUsuario(Us): #es el menu de los usuarios a dia de hoy esta en proceso
             print("Volviendo al menu principal")
             break
 
-from Clases import usuario, libro, equipoComputacion, recurso
 
 usuarios = {
 1000001001: usuario("Ana", "Pérez", 1000001001, "ana_p", "ana123"),
