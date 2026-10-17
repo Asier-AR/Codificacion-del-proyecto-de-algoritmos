@@ -1,12 +1,12 @@
 class persona:
-    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""): #constructor de la clase persona
+    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
         self._nombre = nombre
         self._apellido = apellido
         self._cedula = cedula
         self._nombreUsuario = nombreUsuario
         self._contraseña = contraseña
 
-    def iniciarSesion(self): #creacion del metodo iniciar sesion
+    def iniciarSesion(self): #permite iniciar Sesion usando el nombre de usuario y la contraseña dandole 4 intentos a la persona
         for j in range(4):
             nombreUsuario = input("Ingrese su nombre de usuario: ")
             contraseña = input("Ingrese su contraseña: ")
@@ -19,19 +19,20 @@ class persona:
             
 
 
-class usuario(persona): #clase usuario hija de la clase persona
-    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña="", sanciones=False, objetosReservados=None): #constructor de la clase usuario
+class usuario(persona): 
+    def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña="",
+                 sanciones=False, objetosReservados=None):
         super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
         self._sancion = sanciones
-        self._objetosReservados = objetosReservados or [] #se se crea una lista de objetos reservados si se incluye una en el constructor o si no la crea vacia
+        self._objetosReservados = objetosReservados or []
 
 
-class Operador(persona): #clae operador hija de la clase persona
+class Operador(persona):
     def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
         super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
     # sin iniciarSesion: la hereda de persona
 
-    def buscador(self, registrados): #metodo para buscar usuarios en la base de datos
+    def buscador(self, registrados): #permite buscar un usuari
         try:
             cedulaBuscar = int(input("Ingrese la cédula que desea buscar: "))
         except ValueError:
@@ -50,7 +51,7 @@ class Operador(persona): #clae operador hija de la clase persona
         for obj in u._objetosReservados:
             print(f" - {obj}")
 
-    def mostrarUsuarios(self, registrados): #metodo que printea a todos los usuarios
+    def mostrarUsuarios(self, registrados):
         if not registrados:
             print("No hay usuarios registrados.")
             return
@@ -66,7 +67,7 @@ class Operador(persona): #clae operador hija de la clase persona
             else:
                 print("Objetos reservados: Ninguno")
             print("-" * 30)
-    def eliminarUsuario(self, registrados): #Metodo que elimina usuarios de la base de datos
+    def eliminarUsuario(self, registrados):
         try:
             cedulaBuscar = int(input("Ingrese la cédula del usuario que desea eliminar: "))
         except ValueError:
@@ -83,16 +84,35 @@ class Operador(persona): #clae operador hija de la clase persona
             print("Usuario eliminado correctamente.")
         else:
             print("Acción cancelada.")
+    def sancionarUsuario(self, Us):
+        if Us._sancion:
+            print("El usuario ya tiene una sanción activa.")
+            return False
+        Us._sancion = True
+        print(f"Usuario {Us._nombre} {Us._apellido} sancionado.")
+        return True
+    def quitarSancion(self, Us):
+        if Us._sancion:
+            print(f"Revocando sancion a {Us._nombre} {Us._apellido}")
+            Us._sancion= False
+        else: 
+            print(f"El usuario {Us._nombre} {Us._apellido} no posee ninguna sancion activa")
 
-class Inventario: 
+class Inventario:
     def __init__(self, inventario):
-        self._inventarioDisponible=inventario or {}
-        self._Nodisponible={}
-    def añadirRecurso(self, recurso):
-        if recurso._nombre in self._inventarioDisponible:
-            self._inventarioDisponible[recurso._nombre]._cantidad+=recurso.cantidad
+        self._inventarioDisponible = inventario or {}
+        self._Nodisponible = {}
+
+    def añadirRecurso(self, nuevo):
+        nombre = nuevo._nombre
+        if nombre in self._inventarioDisponible:
+            self._inventarioDisponible[nombre]._cantidad += nuevo._cantidad
+        elif nombre in self._Nodisponible:
+            self._Nodisponible[nombre]._cantidad += nuevo._cantidad
+            self._inventarioDisponible[nombre] = self._Nodisponible.pop(nombre)
         else:
-            self._inventarioDisponible[recurso._nombre]=recurso
+            self._inventarioDisponible[nombre] = nuevo
+        return True
 
 
 
@@ -100,32 +120,7 @@ class recurso:
     def __init__(self, nombre="", cantidad=0):
         self._nombre=nombre
         self._cantidad=cantidad
-
-    def añadir(self):
-        intentos=0
-        cantidad= int (input("Ingrese la cantidad de elementos que desea añadir: "))
-        
-        while cantidad<0:
-            print("No puedes sumar una cantidad negativa ingrese una cantidad valida : ")
-            cantidad=int(input())
-            if intentos==4:
-                print("Se acabaron los intentos para escribir una cantidad valida cancelando proceso: ")
-                return 
-            intentos+=1
-        self._cantidad+=cantidad
-
-    def darBaja(self):
-        intentos=0
-        cantidad= int (input("Ingrese la cantidad de elementos que desea dar de baja: "))
-        while cantidad:
-            print("No existen tantos elementos de ese recurso ingrese otra cantidad: ")
-            cantidad=int(input())
-            if intentos==4:
-                print("Se acabaron los intentos para escribir una cantidad valida cancelando proceso: ")
-                return 
-            intentos+=1
-        self._cantidad-=cantidad
-
+        self._listaEspera=[]
 
 class libro(recurso):
     def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):
