@@ -3,7 +3,7 @@ from Clases import Operador, usuario, libro, equipoComputacion, recurso
 # 1. DICCIONARIO DE 25 USUARIOS (Cédulas de 10 dígitos)
 usuarios = {
     1000001001: usuario("Ana", "Pérez", 1000001001, "ana_p", "ana123"),
-    1000001002: usuario("Luis", "Gómez", 1000001002, "luis_g", "luis123", sanciones=True, objetosReservados=["Mouse"]),
+    1000001002: usuario("Luis", "Gómez", 1000001002, "luis_g", "luis123", sanciones=True),
     1000001003: usuario("Marta", "Rojas", 1000001003, "marta_r", "marta123"),
     1000001004: usuario("Carlos", "Ruiz", 1000001004, "carlos_r", "carlos123"),
     1000001005: usuario("Sofía", "Torres", 1000001005, "sofia_t", "sofia123"),
