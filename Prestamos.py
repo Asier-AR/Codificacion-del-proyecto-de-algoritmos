@@ -111,7 +111,7 @@ class SistemaPrestamos:
             print(" -", p)
 
     def verHistorialRecurso(self, nombreRecurso, recientePrimero=True):
-        if nombreRecurso not in self._inventario:
+        if nombreRecurso not in self._inventarioDisponible and nombreRecurso not in self._inventarioNoDisponible:
             print("El recurso no existe en el inventario.")
             return
         print(f"\nHistorial de {nombreRecurso}:")
@@ -133,3 +133,11 @@ class SistemaPrestamos:
             if Us._sancion or Us._cedula not in registrados:
                 continue
             self.prestar(Us, nombre)
+
+    def tienePrestamosActivos(self, nombre):
+        if nombre not in self._historialRecursos:
+            return False
+        for p in self._historialRecursos[nombre]:
+            if p._estado == "Activo":
+                return True
+        return False

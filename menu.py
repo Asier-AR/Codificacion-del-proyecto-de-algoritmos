@@ -32,7 +32,7 @@ def registro(): #permite crear una lista con los datos primarios para crear un o
 
     return nombre, apellido, cedula, nombreUsuario, contraseña
 
-def registrarRecurso():
+def registrarRecurso(): #permite registrar un recurso
     print("¿Qué tipo de recurso desea añadir?")
     print("1. Equipo de computación")
     print("2. Libro")
@@ -76,23 +76,25 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
         print("5. Quitar sancion a un usuario")
         print("6. Añadir un nuevo recurso")
         print("7. Eliminar un usuario")
+        print("8. Mostar historial de los recursos")
+        print("9. Dar de baja un recurso ")
         h = pedirNumero("Opción: ")
 
         if h == 0:
             print("Saliendo del menú del operador")
             break
         elif h == 1:
-            Op.buscador(usuarios)
+            Op.buscador(usuarios) #permite buscar un usuario
         elif h == 2:
-            nombre, apellido, cedula, nombreUsuario, contraseña = registro()
+            nombre, apellido, cedula, nombreUsuario, contraseña = registro() #permite registrar un operador
             if cedula in operadores:
                 print("Cédula ya registrada, cancelando proceso.")
             else:
                 operadores[cedula] = Operador(nombre, apellido, cedula, nombreUsuario, contraseña)
                 print("Operador registrado correctamente.")
-        elif h == 3:
+        elif h == 3: #permite printear todos los usuarios 
             Op.mostrarUsuarios(usuarios)
-        elif h==4:
+        elif h==4: #permite sancionar un usuario usando su numero de cedula
             cedula= pedirNumero("Ingrese la cedula del usuario: ")
             if cedula in usuarios:
                 Us=usuarios[cedula]
@@ -108,12 +110,12 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
                 print("La cedula que se introdujo no esta registrada")
         elif h==5:
             cedula=pedirNumero("Ingrese la cedula del usuario: ")
-            if cedula in usuarios:
+            if cedula in usuarios: #revisa que la cedula existe
              Us=usuarios[cedula]
              print(f"Esta seguro que quiere revocar la sancion del usuario {Us._nombre} {Us._apellido}")
              eleccion=str (input("Escribe 1 para aceptar, 2 para cancelar: "))
              if eleccion=="1":
-                Op.quitarSancion(Us)
+                Op.quitarSancion(Us) #quita la sancion
              elif eleccion=="2":
                 print("cancelando proceso ")
              else:
@@ -126,8 +128,23 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
             sistema.atenderEspera(nuevo._nombre, usuarios)
         elif h == 7:
             Op.eliminarUsuario(usuarios)
+
+        elif h==8:
+            nombre= input("Ingrese el nombre del recurso: ").strip()
+            sistema.verHistorialRecurso(nombre)
+
+        elif h==9:
+            nombre= input("Ingrese el nombre del recurso al que desea dar de baja : ").strip()
+            if sistema.tienePrestamosActivos(nombre): 
+                print("No se puede dar de baja el recurso porque aun hay prestamos activos ")
+            else:
+                sistemaInventario_dict.darDeBajaRecurso(nombre)
+            
+
         else:
-            print("Opción no válida.")
+            print("="*50 )
+            print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
+            print ("="*50)
 
 def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
     while True:
@@ -137,6 +154,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
         print("2. Realizar un prestamo")
         print("3. Revisar datos propios")
         print("4. Devolver un objeto")
+        print("5. Ver historial de usuario")
         h = pedirNumero("Opción: ")
 
         if h==0:
@@ -147,7 +165,9 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
             for nombre, objeto in inventario._inventarioDisponible.items():
                 print(f"Nombre: {nombre}")
                 print(f"  Cantidad: {objeto._cantidad}")
-        
+            for nombre in inventario._Nodisponible:
+                print(f"Nombre: {nombre}")
+                print("  Agotado (puede unirse a la lista de espera)")
         elif h==2:
             Recurso=input("Ingrese el recurso que desea reservar ")
 
@@ -158,28 +178,52 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
             activos = sistema.prestamosActivos(Us)
             if not activos:
                 print("No tienes préstamos activos.")
+                
             else:
                 for p in activos:
                     print(" -", p)
                 numero = pedirNumero("Número del préstamo a devolver: ")
                 sistema.devolver(Us, numero, usuarios)
-            
+        elif h==5:
+            sistema.verHistorialUsuario(Us)
+        else:
+            print("="*50 )
+            print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
+            print ("="*50)
+        
 
             
 
 
-usuarios = { #diccionario de objetos de clase usuario
-    1398765820: usuario("Ana", "Pérez", 1001, "ana", "ana123"),
-    1002256804: usuario("Luis", "Gómez", 1002, "luis", "luis123", sanciones=True, objetosReservados=["Balón", "Raqueta"]),
-    1003456789: usuario("Marta", "Rojas", 1003, "marta", "marta123", objetosReservados=["Ajedrez"]),
+usuarios = { #diccionario de usuarios
+    1000001001: usuario("Ana", "Pérez", 1000001001, "ana_p", "ana123"),
+    1000001002: usuario("Luis", "Gómez", 1000001002, "luis_g", "luis123", sanciones=True, objetosReservados=["Mouse"]),
+    1000001003: usuario("Marta", "Rojas", 1000001003, "marta_r", "marta123"),
+    1000001004: usuario("Carlos", "Ruiz", 1000001004, "carlos_r", "carlos123"),
+    1000001005: usuario("Sofía", "Torres", 1000001005, "sofia_t", "sofia123"),
+    1000001006: usuario("David", "Morales", 1000001006, "david_m", "david123", sanciones=True),
+    1000001007: usuario("Lucía", "Jiménez", 1000001007, "lucia_j", "lucia123"),
+    1000001008: usuario("Mateo", "Ortiz", 1000001008, "mateo_o", "mateo123"),
+    1000001009: usuario("Valentina", "Castro", 1000001009, "valen_c", "valen123"),
+    1000001010: usuario("Alejandro", "Vargas", 1000001010, "alejo_v", "alejo123"),
+    1000001011: usuario("Camila", "Silva", 1000001011, "camila_s", "camila123"),
+    1000001012: usuario("Daniel", "Rojas", 1000001012, "daniel_r", "daniel123"),
+    1000001013: usuario("Valeria", "Mendoza", 1000001013, "valeria_m", "valeria123"),
+    1000001014: usuario("Andrés", "Parra", 1000001014, "andres_p", "andres123"),
+    1000001015: usuario("Mariana", "López", 1000001015, "mariana_l", "mariana123"),
+    1000001016: usuario("Felipe", "Ramírez", 1000001016, "felipe_r", "felipe123"),
+    1000001017: usuario("Gabriela", "Herrera", 1000001017, "gaby_h", "gaby123"),
+    1000001018: usuario("Juan", "González", 1000001018, "juan_g", "juan123"),
+    1000001019: usuario("Paula", "Martínez", 1000001019, "paula_m", "paula123"),
+    1000001020: usuario("Santiago", "Rodríguez", 1000001020, "santi_r", "santi123"),
+    1000001021: usuario("Isabella", "Fernández", 1000001021, "isa_f", "isa123"),
+    1000001022: usuario("Nicolás", "Gómez", 1000001022, "nico_g", "nico123"),
+    1000001023: usuario("Elena", "Blanco", 1000001023, "elena_b", "elena123"),
+    1000001024: usuario("Tomás", "Navarro", 1000001024, "tomas_n", "tomas123"),
+    1000001025: usuario("Sara", "Castillo", 1000001025, "sara_c", "sara123")
 }
 
 operadores = { #diccionario de objetos de clase operador
-<<<<<<< Updated upstream
-    1098736417: Operador("Admin", "Sistema", 1, "admin", "1234"),
-    2239467890: Operador("Carlos", "Díaz", 2, "carlos", "op2024"),
-}
-=======
 1098736417: Operador("Admin", "Sistema", 1098736417, "admin", "1234"),
 2239467890: Operador("Carlos", "Díaz", 2239467890, "carlos", "op2024"),
 1023456789: Operador("Ana", "Gómez", 1023456789, "ana.gomez", "pass123"),
@@ -233,8 +277,7 @@ operadores = { #diccionario de objetos de clase operador
 1093887119: Operador("Asier", "Arguinzones", 1093887119, "Grimm", "978asier")
 }
 
-
-sistemaInventario_dict = Inventario ({
+sistemaInventario_dict = Inventario ({ #inventario de objetos
 # Libros (10)
 "Matemáticas Discretas": libro("Matemáticas Discretas", 5, "Kenneth Rosen", "2019"),
 "Cálculo Integral": libro("Cálculo Integral", 4, "James Stewart", "2020"),
@@ -265,8 +308,7 @@ sistemaInventario_dict = Inventario ({
 "Mouse": recurso("Mouse", 5)
 })
 
-sistema= SistemaPrestamos(sistemaInventario_dict)
->>>>>>> Stashed changes
+sistema= SistemaPrestamos(sistemaInventario_dict) #creacion del sistema de prestamos usando el sistemaInventario_dict
 
 while True: #menu principal
     print("\n--- MENÚ PRINCIPAL ---")

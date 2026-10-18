@@ -114,6 +114,24 @@ class Inventario:
             self._inventarioDisponible[nombre] = nuevo
         return True
 
+    def darDeBajaRecurso(self, nombre):
+        if nombre in self._inventarioDisponible:
+            recurso = self._inventarioDisponible[nombre]
+            diccionario = self._inventarioDisponible
+        elif nombre in self._Nodisponible:
+            recurso = self._Nodisponible[nombre]
+            diccionario = self._Nodisponible
+        else:
+            print("El recurso que deseas dar de baja no existe.")
+            return False
+
+        if recurso._listaEspera:
+            print("No se puede dar de baja: hay usuarios en la lista de espera.")
+            return False
+
+        del diccionario[nombre]
+        print(f"Recurso '{nombre}' dado de baja.")
+        return True    
 
 
 class recurso:
