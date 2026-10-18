@@ -79,6 +79,9 @@ class Operador(persona): #clase operador hija de persona
         if u is None:
             print("No se encontró ningún usuario con esa cédula.")
             return
+        if u._objetosReservados: #NUEVO: si tiene recursos prestados no se puede eliminar, sino nadie podria devolverlos y el recurso quedaria bloqueado
+            print(f"No se puede eliminar: {u._nombre} {u._apellido} aun tiene recursos prestados: {u._objetosReservados}")
+            return
         print(f"¿Desea eliminar a {u._nombre} {u._apellido} (C.C. {u._cedula})?") #se asegura de que el operador halla escrito al usuario correcto y no otro por accidente
         eleccion = input("Digite 1 para confirmar, 2 para cancelar: ")
         if eleccion == "1":
@@ -158,6 +161,3 @@ class equipoComputacion(recurso):
      def __init__(self, nombre="", cantidad=0, modelo=""):
             super().__init__(nombre, cantidad)
             self._modelo=modelo
-
-
-      

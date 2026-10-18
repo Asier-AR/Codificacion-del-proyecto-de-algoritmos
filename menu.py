@@ -14,6 +14,9 @@ def historialDe(tipo, cedula): #devuelve la pila de deshacer de una persona, y l
         historiales[clave] = HistorialOperaciones()
     return historiales[clave]
 
+sistema._obtenerHistorial = historialDe #NUEVO: asi el sistema sabe en que pila apilar los prestamos que salen de la lista de espera
+sistema._usuarios = usuarios #NUEVO: asi el sistema puede atender la lista de espera cuando se anula un prestamo
+
 def pedirNumero(mensaje): #se asegura que no hayan entradas raras como letras al momento de elegir las opciones
     while True:
         try:
@@ -51,6 +54,8 @@ def confirmarRegistro(tipo, diccionario, cedula, persona): #muestra los datos y 
     print(f"  Cédula: {persona._cedula}")
     print(f"  Usuario: {persona._nombreUsuario}")
     eleccion = input("¿Son correctos? Digite 1 para confirmar, 2 para deshacer el registro: ")
+    while eleccion not in ("1", "2"): #NUEVO: antes cualquier tecla distinta de 2 confirmaba el registro, ahora se repite la pregunta hasta que escriba 1 o 2
+        eleccion = input("Opción inválida, digite 1 para confirmar o 2 para deshacer el registro: ")
     if eleccion == "2":
         if OpRegistro(tipo, diccionario, cedula, persona).deshacer(): #reutiliza la operacion de deshacer registro
             print("Registro deshecho. Puede registrarse de nuevo con los datos correctos.")
@@ -153,7 +158,7 @@ def menuOperador(Op, usuarios, operadores, sistema, inventario): #printea las op
             eraNuevo = nuevo._nombre not in inventario._inventarioDisponible and nuevo._nombre not in inventario._Nodisponible #se revisa antes de añadir, para saber si el recurso ya existia
             inventario.añadirRecurso(nuevo)
             historial.registrar(OpAnadirRecurso(inventario, nuevo._nombre, nuevo._cantidad, eraNuevo))
-            sistema.atenderEspera(nuevo._nombre, usuarios, historial) #los prestamos de la espera quedan encima en la pila
+            sistema.atenderEspera(nuevo._nombre, usuarios, historial) #los prestamos de la espera quedan en la pila de deshacer de cada usuario que los recibe, no en la del operador
         elif h == 7:
             eliminado = Op.eliminarUsuario(usuarios) #devuelve el usuario eliminado o None si no se elimino nada
             if eliminado is not None:
@@ -183,6 +188,8 @@ def menuOperador(Op, usuarios, operadores, sistema, inventario): #printea las op
 
 def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
     historial = historialDe("us", Us._cedula) #pila de deshacer propia de este usuario
+    if Us._buzon: #NUEVO: al entrar avisa si hay notificaciones sin leer
+        print(f"\nTienes {len(Us._buzon)} notificación(es) nueva(s). Revísalas en la opción 7.")
     while True:
         print(f"\n--- MENÚ Usuario de: {Us._nombre} ---")
         print("0. Salir del menú del Usuario")
@@ -192,6 +199,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
         print("4. Devolver un objeto")
         print("5. Ver historial de usuario")
         print("6. Deshacer mi última acción")
+        print("7. Ver notificaciones") #NUEVO
         h = pedirNumero("Opción: ")
 
         if h==0:
@@ -206,7 +214,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
                 print(f"Nombre: {nombre}")
                 print("  Agotado (puede unirse a la lista de espera)")
         elif h==2:
-            Recurso=input("Ingrese el recurso que desea reservar ")
+            Recurso=input("Ingrese el recurso que desea reservar ").strip() #NUEVO: strip quita espacios sobrantes para que no falle por un espacio al final
 
             sistema.prestar(Us, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
         elif h==3:
@@ -225,6 +233,13 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
             sistema.verHistorialUsuario(Us)
         elif h==6:
             historial.confirmarYDeshacer() #muestra la ultima accion del usuario y pide confirmacion
+        elif h==7: #NUEVO: muestra las notificaciones del buzon (por ejemplo, que lo sacaron de una lista de espera por una sancion)
+            if not Us._buzon:
+                print("No tienes notificaciones.")
+            else:
+                for aviso in Us._buzon:
+                    print(" -", aviso)
+                Us._buzon.clear() #una vez leidas se vacia el buzon
         else:
             print("="*50 )
             print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
