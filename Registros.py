@@ -1,4 +1,4 @@
-from Clases import usuario, libro, equipoComputacion, recurso
+from Clases import Operador, usuario, libro, equipoComputacion, recurso
 
 # 1. DICCIONARIO DE 25 USUARIOS (Cédulas de 10 dígitos)
 usuarios = {
@@ -61,4 +61,58 @@ sistemaInventario_dict = {
     "Kit de Herramientas de Red": recurso("Kit de Herramientas de Red", 3),
     "Protoboard y Cables": recurso("Protoboard y Cables", 15),
     "Mouse": recurso("Mouse", 5)
+}
+
+operadores = { #diccionario de clase operador
+1098736417: Operador("Admin", "Sistema", 1098736417, "admin", "1234"),
+2239467890: Operador("Carlos", "Díaz", 2239467890, "carlos", "op2024"),
+1023456789: Operador("Ana", "Gómez", 1023456789, "ana.gomez", "pass123"),
+1034567890: Operador("Luis", "Rodríguez", 1034567890, "luis.rodriguez", "clave2025"),
+1045678901: Operador("Sofía", "Martínez", 1045678901, "sofia.martinez", "abc987"),
+1056789012: Operador("Mateo", "López", 1056789012, "mateo.lopez", "oplat24"),
+1067890123: Operador("Valentina", "Pérez", 1067890123, "valen.perez", "segura1"),
+1078901234: Operador("Alejandro", "García", 1078901234, "alejandro.g", "garcia20"),
+1089012345: Operador("Lucía", "Fernández", 1089012345, "lucia.f", "lucia123"),
+1090123456: Operador("David", "Torres", 1090123456, "david.torres", "torres99"),
+1101234567: Operador("Camila", "Ramírez", 1101234567, "camila.r", "cami2026"),
+1112345678: Operador("Andrés", "Castro", 1112345678, "andres.c", "castro01"),
+1123456789: Operador("Mariana", "Morales", 1123456789, "mariana.m", "marii456"),
+1134567890: Operador("Santiago", "Ortiz", 1134567890, "santiago.o", "santi88"),
+1145678901: Operador("Valeria", "Gutiérrez", 1145678901, "valeria.g", "valguti"),
+1156789012: Operador("Daniel", "Jiménez", 1156789012, "daniel.j", "dj2024"),
+1167890123: Operador("Isabella", "Ruiz", 1167890123, "isabella.r", "ruiz123"),
+1178901234: Operador("Sebastián", "Hernández", 1178901234, "sebastian.h", "sebxh"),
+1189012345: Operador("Gabriela", "Jiménez", 1189012345, "gabriela.j", "gabi99"),
+1190123456: Operador("Nicolás", "Álvarez", 1190123456, "nicolas.a", "nicoalvarez"),
+1201234567: Operador("Sara", "Romero", 1201234567, "sara.romero", "sromero"),
+1212345678: Operador("Lucas", "Moreno", 1212345678, "lucas.moreno", "lucasmo"),
+1223456789: Operador("Martina", "Muñoz", 1223456789, "martina.m", "mmunoz"),
+1234567890: Operador("Joaquín", "Rojas", 1234567890, "joaquin.r", "jrojas25"),
+1245678901: Operador("Elena", "Acosta", 1245678901, "elena.acosta", "elena123"),
+1256789012: Operador("Emiliano", "Medina", 1256789012, "emiliano.m", "emedina"),
+1267890123: Operador("Renata", "Silva", 1267890123, "renata.silva", "rsilva"),
+1278901234: Operador("Matías", "Iglesias", 1278901234, "matias.i", "miglesias"),
+1289012345: Operador("Victoria", "Soto", 1289012345, "victoria.s", "vsoto"),
+1290123456: Operador("Bruno", "Contreras", 1290123456, "bruno.c", "bcontreras"),
+1301234567: Operador("Catalina", "Navarro", 1301234567, "catalina.n", "cnavarro"),
+1312345678: Operador("Felipe", "Mendoza", 1312345678, "felipe.m", "fmendoza"),
+1323456789: Operador("Antonia", "Ríos", 1323456789, "antonia.r", "arios"),
+1334567890: Operador("Tomás", "Castillo", 1334567890, "tomas.c", "tcastillo"),
+1345678901: Operador("Agustina", "Ponce", 1345678901, "agustina.p", "aponce"),
+1356789012: Operador("Benjamín", "Vargas", 1356789012, "benjamin.v", "bvargas"),
+1367890123: Operador("Florencia", "Blanco", 1367890123, "florencia.b", "fblanco"),
+1378901234: Operador("Vicente", "Paz", 1378901234, "vicente.p", "vpaz"),
+1389012345: Operador("Julieta", "Flores", 1389012345, "julieta.f", "jflores"),
+1390123456: Operador("Maximiliano", "Guerrero", 1390123456, "maxi.g", "mguerrero"),
+1401234567: Operador("Emilia", "Herrera", 1401234567, "emilia.h", "eherrera"),
+1412345678: Operador("Dante", "Medina", 1412345678, "dante.m", "dmedina"),
+1423456789: Operador("Regina", "Peña", 1423456789, "regina.p", "rpena"),
+1434567890: Operador("Thiago", "Cabrera", 1434567890, "thiago.c", "tcabrera"),
+1445678901: Operador("Bianca", "Campos", 1445678901, "bianca.c", "bcampos"),
+1456789012: Operador("Gaspar", "Vega", 1456789012, "gaspar.v", "gvega"),
+1467890123: Operador("Clara", "Fuentes", 1467890123, "clara.f", "cfuentes"),
+1478901234: Operador("Alonso", "Cervantes", 1478901234, "alonso.c", "acervantes"),
+1489012345: Operador("Amparo", "Peralta", 1489012345, "amparo.p", "aperalta"),
+1490123456: Operador("Gonzalo", "Molina", 1490123456, "gonzalo.m", "gmolina"),
+1093887119: Operador("Asier", "Arguinzones", 1093887119, "Grimm", "978asier")
 }
