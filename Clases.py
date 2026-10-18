@@ -84,8 +84,10 @@ class Operador(persona): #clase operador hija de persona
         if eleccion == "1":
             del registrados[cedulaBuscar] #elimina al usuario 
             print("Usuario eliminado correctamente.")
+            return u
         else: #cancela la accion si el usuario escribe 2 o cualquier otra cosa
             print("Acción cancelada.")
+            return
     def sancionarUsuario(self, Us): #metodo que se encarga de sancionar un usuario
         if Us._sancion: #si el usuario ya esta sancionado le avisa al operador y no hace mas
             print("El usuario ya tiene una sanción activa.")
@@ -97,8 +99,10 @@ class Operador(persona): #clase operador hija de persona
         if Us._sancion: #si el usuario esta sancionado le quita la sancion
             print(f"Revocando sancion a {Us._nombre} {Us._apellido}")
             Us._sancion= False
+            return True
         else: #si el usuario no esta sancionado le avisa al operador y no hace nada
             print(f"El usuario {Us._nombre} {Us._apellido} no posee ninguna sancion activa")
+            return False
 
 class Inventario: #clase inventario que va a contener un diccionario de objetos de clase recurso o hijos de esta clase
     def __init__(self, inventario):
