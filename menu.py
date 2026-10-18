@@ -1,6 +1,6 @@
 from Clases import *
 from Prestamos import *
-
+from deshacer import *
 def pedirNumero(mensaje): #se asegura que no hayan entradas raras como letras al momento de elegir las opciones
     while True:
         try:
@@ -43,7 +43,7 @@ def registrarRecurso(): #permite registrar un recurso
 
     nombre = input("Ingrese el nombre del recurso: ").strip().lower()
     while nombre == "":
-        nombre = input("El nombre no puede estar vacío, ingréselo de nuevo: ").strip() #el metodo strip elimina todos los espacios y tabulaciones en los nombres tanto como en la izquierda como por la derecha
+        nombre = input("El nombre no puede estar vacío, ingréselo de nuevo: ").strip().lower() #el metodo strip elimina todos los espacios y tabulaciones en los nombres tanto como en la izquierda como por la derecha
 
     cantidad = pedirNumero("Ingrese la cantidad que desea añadir: ")
     while cantidad <= 0:
@@ -65,7 +65,7 @@ def registrarRecurso(): #permite registrar un recurso
 
 
 
-def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y ejecuta el menu del operador
+def menuOperador(Op, usuarios, operadores, sistema, historial, inventario): #printea las opciones y ejecuta el menu del operador
     while True:
         print("\n--- MENÚ OPERADOR ---")
         print("0. Salir del menú del operador")
@@ -78,6 +78,7 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
         print("7. Eliminar un usuario")
         print("8. Mostar historial de los recursos")
         print("9. Dar de baja un recurso ")
+        print("10.Deshacer ultima operacion ")
         h = pedirNumero("Opción: ")
 
         if h == 0:
@@ -90,12 +91,14 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
             if cedula in operadores:
                 print("Cédula ya registrada, cancelando proceso.")
             else:
-                operadores[cedula] = Operador(nombre, apellido, cedula, nombreUsuario, contraseña)
+                nuevoOp=Operador(nombre, apellido, cedula, nombreUsuario, contraseña)
+                operadores[cedula] =nuevoOp
+                historial.registrar(OpRegistro("operador", operadores, cedula, nuevoOp))
                 print("Operador registrado correctamente.")
         elif h == 3: #permite printear todos los usuarios 
             Op.mostrarUsuarios(usuarios)
         elif h==4: #permite sancionar un usuario usando su numero de cedula
-            cedula= pedirNumero("Ingrese la cedula del usuario: ")
+            cedula= pedirNumero("Ingrese la cedula del usuario: ") #aun falta por crear su metodo deshacer
             if cedula in usuarios:
                 Us=usuarios[cedula]
                 print(f"Esta seguro que quiere sancionar al usuario {Us._nombre} {Us._apellido}")
@@ -108,13 +111,13 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
                     print("Opcion invalida cancelando proceso")
             else: 
                 print("La cedula que se introdujo no esta registrada")
-        elif h==5:
+        elif h==5: #Le quita la sansion  aun usuario
             cedula=pedirNumero("Ingrese la cedula del usuario: ")
             if cedula in usuarios: #revisa que la cedula existe
              Us=usuarios[cedula]
              print(f"Esta seguro que quiere revocar la sancion del usuario {Us._nombre} {Us._apellido}")
              eleccion=str (input("Escribe 1 para aceptar, 2 para cancelar: "))
-             if eleccion=="1":
+             if eleccion=="1": #aun falta por crear el metodo revocar para esta accion por lo que aun no se guarda en el historial
                 Op.quitarSancion(Us) #quita la sancion
              elif eleccion=="2":
                 print("cancelando proceso ")
@@ -124,10 +127,12 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
                 print("La cedula que se introdujo no esta registrada")
         elif h==6:
             nuevo=registrarRecurso()
-            sistemaInventario_dict.añadirRecurso(nuevo)
+            inventario.añadirRecurso(nuevo)
             sistema.atenderEspera(nuevo._nombre, usuarios)
         elif h == 7:
-            Op.eliminarUsuario(usuarios)
+            Eliminado= Op.eliminarUsuario(usuarios)
+            if Eliminado is not None:
+                historial.registrar(OpEliminarPersona("usuario", usuarios, Eliminado._cedula, Eliminado))
 
         elif h==8:
             nombre= input("Ingrese el nombre del recurso: ").strip().lower()
@@ -138,7 +143,9 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
             if sistema.tienePrestamosActivos(nombre): 
                 print("No se puede dar de baja el recurso porque aun hay prestamos activos ")
             else:
-                sistemaInventario_dict.darDeBajaRecurso(nombre)
+                inventario.darDeBajaRecurso(nombre)
+        elif h==10:
+            historial.confirmarYDeshacer()
             
 
         else:
@@ -206,7 +213,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
 
 usuarios = { #diccionario de usuarios
     1000001001: usuario("Ana", "Pérez", 1000001001, "ana_p", "ana123"),
-    1000001002: usuario("Luis", "Gómez", 1000001002, "luis_g", "luis123", sanciones=True, objetosReservados=["Mouse"]),
+    1000001002: usuario("Luis", "Gómez", 1000001002, "luis_g", "luis123", sanciones=True),
     1000001003: usuario("Marta", "Rojas", 1000001003, "marta_r", "marta123"),
     1000001004: usuario("Carlos", "Ruiz", 1000001004, "carlos_r", "carlos123"),
     1000001005: usuario("Sofía", "Torres", 1000001005, "sofia_t", "sofia123"),
@@ -316,7 +323,7 @@ sistemaInventario_dict = Inventario ({ #inventario de objetos
 "protoboard y cables": recurso("protoboard y cables", 15),
 "mouse": recurso("mouse", 5)
 })
-
+historial = HistorialOperaciones()
 sistema=SistemaPrestamos(sistemaInventario_dict) #creacion del sistema de prestamos usando el sistemaInventario_dict
 
 while True: #menu principal
@@ -364,7 +371,7 @@ while True: #menu principal
             print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
 
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
-            menuOperador(Op, usuarios, operadores, sistema)
+            menuOperador(Op, usuarios, operadores, sistema, historial, sistemaInventario_dict)
     else:
         print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
