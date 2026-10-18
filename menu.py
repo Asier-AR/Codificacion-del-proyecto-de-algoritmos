@@ -41,7 +41,7 @@ def registrarRecurso(): #permite registrar un recurso
     while h not in (1, 2, 3):
         h = pedirNumero("Opción inválida, escriba 1, 2 o 3: ")
 
-    nombre = input("Ingrese el nombre del recurso: ").strip()
+    nombre = input("Ingrese el nombre del recurso: ").strip().lower()
     while nombre == "":
         nombre = input("El nombre no puede estar vacío, ingréselo de nuevo: ").strip() #el metodo strip elimina todos los espacios y tabulaciones en los nombres tanto como en la izquierda como por la derecha
 
@@ -130,11 +130,11 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
             Op.eliminarUsuario(usuarios)
 
         elif h==8:
-            nombre= input("Ingrese el nombre del recurso: ").strip()
+            nombre= input("Ingrese el nombre del recurso: ").strip().lower()
             sistema.verHistorialRecurso(nombre)
 
         elif h==9:
-            nombre= input("Ingrese el nombre del recurso al que desea dar de baja : ").strip()
+            nombre= input("Ingrese el nombre del recurso al que desea dar de baja : ").strip().lower()
             if sistema.tienePrestamosActivos(nombre): 
                 print("No se puede dar de baja el recurso porque aun hay prestamos activos ")
             else:
@@ -147,6 +147,14 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
             print ("="*50)
 
 def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
+    
+    if Us._buzon:
+        print("Tienes notificaciones nuevas ")
+        for mensaje in Us._buzon:
+            print(f"- {mensaje}")
+            print("="*50)
+        Us._buzon.clear()
+    
     while True:
         print(f"\n--- MENÚ Usuario de: {Us._nombre} ---")
         print("0. Salir del menú del Usuario")
@@ -155,6 +163,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
         print("3. Revisar datos propios")
         print("4. Devolver un objeto")
         print("5. Ver historial de usuario")
+            
         h = pedirNumero("Opción: ")
 
         if h==0:
@@ -169,7 +178,7 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
                 print(f"Nombre: {nombre}")
                 print("  Agotado (puede unirse a la lista de espera)")
         elif h==2:
-            Recurso=input("Ingrese el recurso que desea reservar ")
+            Recurso=input("Ingrese el recurso que desea reservar ").strip().lower()
 
             sistema.prestar(Us, Recurso)
         elif h==3:
@@ -279,36 +288,36 @@ operadores = { #diccionario de objetos de clase operador
 
 sistemaInventario_dict = Inventario ({ #inventario de objetos
 # Libros (10)
-"Matemáticas Discretas": libro("Matemáticas Discretas", 5, "Kenneth Rosen", "2019"),
-"Cálculo Integral": libro("Cálculo Integral", 4, "James Stewart", "2020"),
-"Estructuras de Datos": libro("Estructuras de Datos", 3, "Mark Allen Weiss", "2013"),
-"Física Mecánica": libro("Física Mecánica", 6, "Serway Jewett", "2018"),
-"Inteligencia Artificial": libro("Inteligencia Artificial", 2, "Stuart Russell", "2021"),
-"Algoritmos en Python": libro("Algoritmos en Python", 5, "Luciano Ramalho", "2022"),
-"Bases de Datos": libro("Bases de Datos", 4, "Abraham Silberschatz", "2019"),
-"Redes de Computadoras": libro("Redes de Computadoras", 3, "Andrew Tanenbaum", "2021"),
-"Álgebra Lineal": libro("Álgebra Lineal", 7, "Stanley Grossman", "2015"),
-"Ingeniería de Software": libro("Ingeniería de Software", 3, "Ian Sommerville", "2015"),
+"matemáticas discretas": libro("matemáticas discretas", 5, "Kenneth Rosen", "2019"),
+"cálculo integral": libro("cálculo integral", 4, "James Stewart", "2020"),
+"estructuras de datos": libro("estructuras de datos", 3, "Mark Allen Weiss", "2013"),
+"física mecánica": libro("física mecánica", 6, "Serway Jewett", "2018"),
+"inteligencia artificial": libro("inteligencia artificial", 2, "Stuart Russell", "2021"),
+"algoritmos en python": libro("algoritmos en python", 5, "Luciano Ramalho", "2022"),
+"bases de datos": libro("bases de datos", 4, "Abraham Silberschatz", "2019"),
+"redes de computadoras": libro("redes de computadoras", 3, "Andrew Tanenbaum", "2021"),
+"álgebra lineal": libro("álgebra lineal", 7, "Stanley Grossman", "2015"),
+"ingeniería de software": libro("ingeniería de software", 3, "Ian Sommerville", "2015"),
 # Equipos de Computación (8)
-"Computador Portátil Dell": equipoComputacion("Computador Portátil Dell", 4, "Latitude 5420"),
-"Computador Portátil HP": equipoComputacion("Computador Portátil HP", 3, "ProBook 450"),
-"MacBook Pro": equipoComputacion("MacBook Pro", 2, "M2 Pro 2023"),
-"Tablet Lenovo": equipoComputacion("Tablet Lenovo", 5, "Tab P11"),
-"Monitor LG 27": equipoComputacion("Monitor LG 27", 4, "UltraGear 27GN850"),
-"Video Beam Epson": equipoComputacion("Video Beam Epson", 2, "PowerLite X49"),
-"Impresora Laser": equipoComputacion("Impresora Laser", 2, "Brother HL-L2350DW"),
-"iPad Air": equipoComputacion("iPad Air", 1, "5ta Generación"),
+"computador portátil dell": equipoComputacion("computador portátil dell", 4, "Latitude 5420"),
+"computador portátil hp": equipoComputacion("computador portátil hp", 3, "ProBook 450"),
+"macbook pro": equipoComputacion("macbook pro", 2, "M2 Pro 2023"),
+"tablet lenovo": equipoComputacion("tablet lenovo", 5, "Tab P11"),
+"monitor lg 27": equipoComputacion("monitor lg 27", 4, "UltraGear 27GN850"),
+"video beam epson": equipoComputacion("video beam epson", 2, "PowerLite X49"),
+"impresora laser": equipoComputacion("impresora laser", 2, "Brother HL-L2350DW"),
+"ipad air": equipoComputacion("ipad air", 1, "5ta Generación"),
 # Otros recursos / Varios (7)
-"Calculadora Científica": recurso("Calculadora Científica", 10),
-"Multímetro Digital": recurso("Multímetro Digital", 6),
-"Arduino Uno Kit": recurso("Arduino Uno Kit", 5),
-"Raspberry Pi 4": recurso("Raspberry Pi 4", 4),
-"Kit de Herramientas de Red": recurso("Kit de Herramientas de Red", 3),
-"Protoboard y Cables": recurso("Protoboard y Cables", 15),
-"Mouse": recurso("Mouse", 5)
+"calculadora científica": recurso("calculadora científica", 10),
+"multímetro digital": recurso("multímetro digital", 6),
+"arduino uno kit": recurso("arduino uno kit", 5),
+"raspberry pi 4": recurso("raspberry pi 4", 4),
+"kit de herramientas de red": recurso("kit de herramientas de red", 3),
+"protoboard y cables": recurso("protoboard y cables", 15),
+"mouse": recurso("mouse", 5)
 })
 
-sistema= SistemaPrestamos(sistemaInventario_dict) #creacion del sistema de prestamos usando el sistemaInventario_dict
+sistema=SistemaPrestamos(sistemaInventario_dict) #creacion del sistema de prestamos usando el sistemaInventario_dict
 
 while True: #menu principal
     print("\n--- MENÚ PRINCIPAL ---")

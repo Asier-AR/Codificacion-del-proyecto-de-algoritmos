@@ -27,7 +27,7 @@ class SistemaPrestamos:
         self._historialRecursos = {}         # nombre del recurso -> lista de prestamos
         self._contador = 0                   # numero consecutivo de prestamo
 
-    def prestar(self, usuario, nombreRecurso):
+    def prestar(self, usuario, nombreRecurso, silencioso=False):
         # --- validaciones ---
         if usuario._sancion:
             print("No puedes realizar préstamos porque tienes una sanción activa.")
@@ -71,9 +71,10 @@ class SistemaPrestamos:
             self._historialRecursos[nombreRecurso] = []
         self._historialRecursos[nombreRecurso].append(nuevo)
 
-        print("Préstamo registrado:", nuevo)
+        if not silencioso:
+            print("Préstamo registrado:", nuevo)
         return True
-
+ 
     def prestamosActivos(self, usuario):
         # recorre el historial del usuario y se queda solo con los que siguen activos
         activos = []
@@ -83,7 +84,7 @@ class SistemaPrestamos:
                     activos.append(p)
         return activos
 
-    def devolver(self, usuario, numeroPrestamo, registrados):
+    def devolver(self, usuario, numeroPrestamo, registrados): #metodo que permite devolver un recurso
         for p in self.prestamosActivos(usuario):
             if p._numero == numeroPrestamo:
                 p.registrarDevolucion()
@@ -99,7 +100,7 @@ class SistemaPrestamos:
         print("No tienes un préstamo activo con ese número.")
         return False
     
-    def verHistorialUsuario(self, usuario, recientePrimero=True):
+    def verHistorialUsuario(self, usuario, recientePrimero=True): #metodo que permite ver el historial de acciones realizadas por un usuario
         print(f"\nHistorial de {usuario._nombre} {usuario._apellido}:")
         if usuario._cedula not in self._historialUsuarios:
             print(" - Sin préstamos.")
@@ -110,7 +111,7 @@ class SistemaPrestamos:
         for p in lista:
             print(" -", p)
 
-    def verHistorialRecurso(self, nombreRecurso, recientePrimero=True):
+    def verHistorialRecurso(self, nombreRecurso, recientePrimero=True): #metodo que permite ver las personas que han pedido prestadas un recurso junto con sus fechas
         if nombreRecurso not in self._inventarioDisponible and nombreRecurso not in self._inventarioNoDisponible:
             print("El recurso no existe en el inventario.")
             return
@@ -124,17 +125,19 @@ class SistemaPrestamos:
         for p in lista:
             print(" -", p)
             
-    def atenderEspera(self, nombre, registrados):
+    def atenderEspera(self, nombre, registrados): #metodo que se encarga de realizar los prestamos de manera automatica para las personas que esten en una lista de espera
         while nombre in self._inventarioDisponible:
             recurso = self._inventarioDisponible[nombre]
             if not recurso._listaEspera:
                 break
             Us = recurso._listaEspera.pop(0)
-            if Us._sancion or Us._cedula not in registrados:
+            if Us._sancion or Us._cedula not in registrados: #si el usuario esta sancionado o ya no existe en el registro continua al siguiente
                 continue
-            self.prestar(Us, nombre)
+            if self.prestar(Us, nombre, True): #realiza el prestamo de manera automatica
+                Us._buzon.append(f"El recurso {nombre} que tenias en la lista de espera ya te fue prestado y ya puedes ir a reclamarlo")
 
-    def tienePrestamosActivos(self, nombre):
+
+    def tienePrestamosActivos(self, nombre): #se encarga de verificar que un usuario tenga o no tenga prestamos activos
         if nombre not in self._historialRecursos:
             return False
         for p in self._historialRecursos[nombre]:
