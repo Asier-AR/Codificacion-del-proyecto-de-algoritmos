@@ -47,6 +47,4 @@ if activos:
     stock_final = sistema._inventarioDisponible[nombre_recurso]._cantidad
     print(f"Stock final de '{nombre_recurso}' tras devolver: {stock_final}")
 
-print("\n==========================================")
 print("   PRUEBAS EJECUTADAS CORRECTAMENTE")
-print("==========================================")
