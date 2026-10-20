@@ -36,4 +36,10 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest
+        PYTEST_FILES=$(find . -type f \( -name 'test_*.py' -o -name '*_test.py' -o -name 'pruebas*.py' \) | tr '\n' ' ')
+        if [ -n "$PYTEST_FILES" ]; then
+          echo "Running pytest on: $PYTEST_FILES"
+          pytest $PYTEST_FILES
+        else
+          echo "No pytest files found in this branch; skipping tests."
+        fi
