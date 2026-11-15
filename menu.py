@@ -6,6 +6,39 @@ from deshacer import *
 inventario = Inventario(sistemaInventario_dict)   # envuelve el diccionario de Registros.py en un objeto Inventario
 sistema = SistemaPrestamos(inventario) #crea un objeto de la clase sistema de prestamos
 
+def cargarHistorial(sistema): #mete los prestamos de historialPrestamos (Registros.py) dentro del sistema de prestamos, se llama una sola vez al iniciar
+    for numero, cedula, nombreRecurso, fechaPrestamo, fechaDevolucion in historialPrestamos:
+        Us = usuarios[cedula]
+        if nombreRecurso in sistema._inventarioDisponible: #se busca el recurso en el inventario disponible o en el agotado
+            rec = sistema._inventarioDisponible[nombreRecurso]
+        else:
+            rec = sistema._inventarioNoDisponible[nombreRecurso]
+
+        p = Prestamo(numero, Us, rec)
+        p._fechaPrestamo = fechaPrestamo #se reemplaza la fecha de hoy por la fecha del registro
+        if fechaDevolucion != "":
+            p._estado = "Devuelto"
+            p._fechaDevolucion = fechaDevolucion
+        else: #prestamo activo: la unidad sigue prestada y el usuario la tiene reservada
+            rec._cantidad -= 1
+            Us._objetosReservados.append(nombreRecurso)
+
+        # el mismo objeto va a los dos historiales (igual que en prestar)
+        if cedula not in sistema._historialUsuarios:
+            sistema._historialUsuarios[cedula] = []
+        sistema._historialUsuarios[cedula].append(p)
+        if nombreRecurso not in sistema._historialRecursos:
+            sistema._historialRecursos[nombreRecurso] = []
+        sistema._historialRecursos[nombreRecurso].append(p)
+
+    sistema._contador = len(historialPrestamos) #el siguiente prestamo nuevo sera el #201
+
+    for nombreRecurso in list(sistema._inventarioDisponible): #si algun recurso quedo en 0 unidades, pasa a agotados
+        if sistema._inventarioDisponible[nombreRecurso]._cantidad == 0:
+            sistema._inventarioNoDisponible[nombreRecurso] = sistema._inventarioDisponible.pop(nombreRecurso)
+
+cargarHistorial(sistema) #carga los 200 prestamos de Registros.py
+
 historiales = {}   # una pila de deshacer por persona: ("us", cedula) o ("op", cedula)
 
 def historialDe(tipo, cedula): #devuelve la pila de deshacer de una persona, y la crea si es la primera vez
