@@ -8,26 +8,43 @@ class Sede:
 
 
 class SistemaSede:
-    def __init__(self):
-        self._sedes = {}       # nombre -> Sede diccionario que guarda el nombre de las sedes
-        self._vecinos = {}     # nombre -> {nombreVecino: distancia} guarda las distancias existentes entre sedes
+    def __init__(self, sedes=None, conexiones=None):
+        self._sedes = sedes if sedes is not None else []
+        self._vecinos = conexiones if conexiones is not None else []     # nombre -> {nombreVecino: distancia} guarda las distancias existentes entre sedes
 
-    def añadirSede(self, sede):
-        if sede._Nombre in self._sedes:
-            print("Esa sede ya existe.")
-            return False
-        self._sedes[sede._Nombre] = sede
-        self._vecinos[sede._Nombre] = {}
-        return True
+    def agregarSede(self, sede):
+        self._sedes.append(sede)
 
-    def conectar(self, a, b, distancia): #funcion que conecta las sedes generando una distancia
-        if a not in self._sedes or b not in self._sedes or a == b: # si alguna de las 2 sedes no existe no se hace nada
-            return False
-        if distancia <= 0: #si la distancia ingresada es menor a 0 o -1 entonces no se hace nada
-            return False
-        self._vecinos[a][b] = distancia
-        self._vecinos[b][a] = distancia   # no dirigido
-        return True
+    def añadirConexion(self, sede1, sede2, distancia):
+        if sede1 not in self._vecinos:
+            self._vecinos[sede1] = {}
+        if sede2 not in self._vecinos:
+            self._vecinos[sede2] = {}
+        self._vecinos[sede1][sede2] = distancia
+        self._vecinos[sede2][sede1] = distancia  # Conexión bidireccional
+
+    def obtenerDistancia(self, sede1, sede2, visitados=None):
+        if visitados is None:
+            visitados = []
+        if sede1 == sede2:
+            return 0
+        visitados.append(sede1)
+        mejor = -1
+        for vecino, peso in self._vecinos[sede1].items():
+            if vecino in visitados:
+                continue
+            resto = self.obtenerDistancia(vecino, sede2, visitados) #recursividad para buscar la distancia entre sedes
+            if resto != -1 and (mejor == -1 or peso + resto < mejor): 
+                mejor = peso + resto
+        visitados.remove(sede1)      # backtracking: se libera para otras rutas
+        return mejor
+
+
+        
+        
+
+
+        
 
         
     
