@@ -2,90 +2,85 @@ from Clases import *
 from Prestamos import *
 from Registros import *
 from deshacer import *
-sistema = SistemaPrestamos(inventario) #crea un objeto de la clase sistema de prestamos
+sistema = SistemaPrestamos(SistemaSedes) #crea un objeto de la clase sistema de prestamos
 
-def mostrarInventario(inventario):
-    print("Que tipo de articulo desea ver.")
-    print("1. Libros")
-    print("2. Equipo de computacion")
-    print ("3. Otros")
-    filtro=pedirNumero("solo escriba el numero que se encuentra antes de la palabra, si escribe cualquier otro numero se escribira todo el inventario ")
-
-    if filtro==1:
-        print("="*30, "Libros", "="*30)
-        for x in inventario._libro:
-            if x in inventario._inventarioDisponible:
-                print(f"Nombre: {x}")
-                print(f"Autor: {inventario._inventarioDisponible[x]._autor}")                
-                print(f"Cantidad: {inventario._inventarioDisponible[x]._cantidad}")
-                print("")
-            elif x in inventario._Nodisponible:
-                print(f"Nombre:  {x}")
-                print(f"Autor: {inventario._Nodisponible[x]._autor}")                                
-                print("Cantidad: El articulo no se encuentra disponible, puede ingresar a la lista de espera si asi lo desea")
-
-    elif filtro==2:
-            print("="*30, "Equipo de computacion", "="*30)
-            for x in inventario._Equipo:
-                if x in inventario._inventarioDisponible:
-                    print(f"Nombre: {x}")
-                    print(f"Modelo: {inventario._inventarioDisponible[x]._modelo}")
-                    print(f"Cantidad: {inventario._inventarioDisponible[x]._cantidad}")
-                    print("")
-                elif x in inventario._Nodisponible:
-                    print(f"Nombre:  {x}")
-                    print(f"Modelo: {inventario._Nodisponible[x]._modelo}")
-                    print("Cantidad: El articulo no se encuentra disponible, puede ingresar a la lista de espera si asi lo desea")
-                    print("")
-    elif filtro==3:
-            print("="*30, "Otros", "="*30)
-            for x in inventario._Otros:
-                if x in inventario._inventarioDisponible:
-                    print(f"Nombre: {x}")
-                    print(f"Cantidad: {inventario._inventarioDisponible[x]._cantidad}")
-                    print("")
-                elif x in inventario._Nodisponible:
-                    print(f"Nombre:  {x}")
-                    print("Cantidad: El articulo no se encuentra disponible, puede ingresar a la lista de espera si asi lo desea")
-                    print("")
+def mostrarInventario(sistema):
+    nombres = list(sistema._sistemaSede._sedes)
+    filtroSede = None
+    eleccion = input("¿Desea buscar en alguna sede en especifico? (S/N) ").lower().strip()
+    if eleccion in ("s", "si"):
+        for i, n in enumerate(nombres, 1):
+            print(f"{i}. {n}")
+        num = pedirNumero("Ingrese el numero de la sede: ")
+        while num < 1 or num > len(nombres):
+            num = pedirNumero("Numero no valido, intente de nuevo: ")
+        filtroSede = nombres[num - 1] #esto ya que se si se quiere acceder a la sede 1 realmente se estaria accidiendo a la posicion 0 de la lista
     else:
-        for nombre, objeto in inventario._inventarioDisponible.items():
-            print(f"Nombre: {nombre}")
-            print(f"  Cantidad: {objeto._cantidad}")
-        for nombre in inventario._Nodisponible:
-            print(f"Nombre: {nombre}")
-            print("  Agotado (puede unirse a la lista de espera)") 
+        print("Se mostrara el inventario de todas las sedes.")
 
-def cargarHistorial(sistema): #mete los prestamos de historialPrestamos (Registros.py) dentro del sistema de prestamos, se llama una sola vez al iniciar
+    print("Que tipo de articulo desea ver.")
+    print("1. Libros\n2. Equipo de computacion\n3. Otros")
+    filtro = pedirNumero("Cualquier otro numero muestra todo: ")
+    listas = {1: "_libro", 2: "_Equipo", 3: "_Otros"}
+
+    for nombreSede in ([filtroSede] if filtroSede else nombres):
+        inv = sistema._inv(nombreSede)
+        print("\n" + "=" * 20, nombreSede, "=" * 20)
+        if filtro in listas:
+            lista = getattr(inv, listas[filtro])
+        else:
+            lista = list(inv._inventarioDisponible) + list(inv._Nodisponible)
+        for x in lista:
+            if x in inv._inventarioDisponible:
+                obj = inv._inventarioDisponible[x]
+                cantidad = obj._cantidad
+            else:
+                obj = inv._Nodisponible[x]
+                cantidad = "Agotado (puede unirse a la lista de espera)"
+            print(f"Nombre: {x}")
+            if isinstance(obj, libro):
+                print(f"Autor: {obj._autor}")
+            elif isinstance(obj, equipoComputacion):
+                print(f"Modelo: {obj._modelo}")
+            print(f"Cantidad: {cantidad}\n")
+
+def elegirSede(sistema):
+    nombres = list(sistema._sistemaSede._sedes)
+    for i, n in enumerate(nombres, 1):
+        print(f"{i}. {n}")
+    num = pedirNumero("Numero de la sede: ")
+    while num < 1 or num > len(nombres):
+        num = pedirNumero("Numero no valido, intente de nuevo: ")
+    return nombres[num - 1]
+
+def cargarHistorial(sistema):
     for numero, cedula, nombreRecurso, fechaPrestamo, fechaDevolucion in historialPrestamos:
         Us = usuarios[cedula]
-        if nombreRecurso in sistema._inventarioDisponible: #se busca el recurso en el inventario disponible o en el agotado
-            rec = sistema._inventarioDisponible[nombreRecurso]
-        else:
-            rec = sistema._inventarioNoDisponible[nombreRecurso]
+        sede = next(s for s in sistema._sistemaSede._sedes
+                    if nombreRecurso in sistema._inv(s)._inventarioDisponible
+                    or nombreRecurso in sistema._inv(s)._Nodisponible)
+        inv = sistema._inv(sede)
+        rec = inv._inventarioDisponible.get(nombreRecurso) or inv._Nodisponible[nombreRecurso]
 
-        p = Prestamo(numero, Us, rec)
-        p._fechaPrestamo = fechaPrestamo #se reemplaza la fecha de hoy por la fecha del registro
+        p = Prestamo(numero, Us, rec, sede)
+        p._fechaPrestamo = fechaPrestamo
         if fechaDevolucion != "":
             p._estado = "Devuelto"
             p._fechaDevolucion = fechaDevolucion
-        else: #prestamo activo: la unidad sigue prestada y el usuario la tiene reservada
+        else:
             rec._cantidad -= 1
             Us._objetosReservados.append(nombreRecurso)
 
-        # el mismo objeto va a los dos historiales (igual que en prestar)
-        if cedula not in sistema._historialUsuarios:
-            sistema._historialUsuarios[cedula] = []
-        sistema._historialUsuarios[cedula].append(p)
-        if nombreRecurso not in sistema._historialRecursos:
-            sistema._historialRecursos[nombreRecurso] = []
-        sistema._historialRecursos[nombreRecurso].append(p)
+        sistema._historialUsuarios.setdefault(cedula, []).append(p)
+        sistema._historialRecursos.setdefault((sede, nombreRecurso), []).append(p)
 
-    sistema._contador = len(historialPrestamos) #el siguiente prestamo nuevo sera el #201
+    sistema._contador = len(historialPrestamos)
 
-    for nombreRecurso in list(sistema._inventarioDisponible): #si algun recurso quedo en 0 unidades, pasa a agotados
-        if sistema._inventarioDisponible[nombreRecurso]._cantidad == 0:
-            sistema._inventarioNoDisponible[nombreRecurso] = sistema._inventarioDisponible.pop(nombreRecurso)
+    for sede in sistema._sistemaSede._sedes:      # lo que quedó en 0 pasa a agotados
+        inv = sistema._inv(sede)
+        for n in list(inv._inventarioDisponible):
+            if inv._inventarioDisponible[n]._cantidad == 0:
+                inv._Nodisponible[n] = inv._inventarioDisponible.pop(n)
 
 cargarHistorial(sistema) #carga los 200 prestamos de Registros.py
 
@@ -173,7 +168,7 @@ def registrarRecurso(): #permite registrar un recurso
     else:
         return recurso(nombre, cantidad)
 
-def menuOperador(Op, usuarios, operadores, sistema, inventario): #printea las opciones y ejecuta el menu del operador
+def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y ejecuta el menu del operador
     historial = historialDe("op", Op._cedula) #pila de deshacer propia de este operador
     while True:
         print("\n--- MENÚ OPERADOR ---")
@@ -237,23 +232,28 @@ def menuOperador(Op, usuarios, operadores, sistema, inventario): #printea las op
             else:
                 print("La cedula que se introdujo no esta registrada")
         elif h==6:
+            sede=elegirSede(sistema)
+            inventario=sistema._inv(sede)
             nuevo=registrarRecurso()
             eraNuevo = nuevo._nombre not in inventario._inventarioDisponible and nuevo._nombre not in inventario._Nodisponible #se revisa antes de añadir, para saber si el recurso ya existia
             inventario.añadirRecurso(nuevo)
             historial.registrar(OpAnadirRecurso(inventario, nuevo._nombre, nuevo._cantidad, eraNuevo))
-            sistema.atenderEspera(nuevo._nombre, usuarios, historial) #los prestamos de la espera quedan en la pila de deshacer de cada usuario que los recibe, no en la del operador
+            sistema.atenderEspera(sede, nuevo._nombre, usuarios, historial) #los prestamos de la espera quedan en la pila de deshacer de cada usuario que los recibe, no en la del operador
         elif h == 7:
             eliminado = Op.eliminarUsuario(usuarios) #devuelve el usuario eliminado o None si no se elimino nada
             if eliminado is not None:
                 historial.registrar(OpEliminarPersona("usuario", usuarios, eliminado._cedula, eliminado))
 
         elif h==8:
+            sede=elegirSede(sistema)
             nombre= input("Ingrese el nombre del recurso: ").strip().lower()
-            sistema.verHistorialRecurso(nombre)
+            sistema.verHistorialRecurso(sede, nombre)
 
         elif h==9:
+            sede=elegirSede(sistema)
+            inventario=sistema._inv(sede)
             nombre= input("Ingrese el nombre del recurso al que desea dar de baja : ").strip().lower()
-            if sistema.tienePrestamosActivos(nombre):
+            if sistema.tienePrestamosActivos(sede, nombre):
                 print("No se puede dar de baja el recurso porque aun hay prestamos activos ")
             else:
                 estabaDisponible = nombre in inventario._inventarioDisponible #se guarda donde estaba para devolverlo ahi si se deshace
@@ -269,7 +269,7 @@ def menuOperador(Op, usuarios, operadores, sistema, inventario): #printea las op
             print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
             print ("="*50)
 
-def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
+def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
     historial = historialDe("us", Us._cedula) #pila de deshacer propia de este usuario
     if Us._buzon: #NUEVO: al entrar avisa si hay notificaciones sin leer
         print(f"\nTienes {len(Us._buzon)} notificación(es) nueva(s). Revísalas en la opción 7.")
@@ -290,11 +290,13 @@ def menuUsuario(Us, sistema, inventario, usuarios): #es el menu de los usuarios 
             return
 
         elif h==1:
-           mostrarInventario(inventario)
+           mostrarInventario(sistema)
         elif h==2:
+            sede=elegirSede(sistema)
+
             Recurso=input("Ingrese el recurso que desea reservar ").strip().lower() #NUEVO: strip quita espacios sobrantes para que no falle por un espacio al final
 
-            sistema.prestar(Us, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
+            sistema.prestar(Us, sede, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
         elif h==3:
             print(f"Nombre: {Us._nombre} \n Apellido: {Us._apellido} \n Nombre de usuario: {Us._nombreUsuario} \n Recursos Reservados: {Us._objetosReservados} \n Sancion: {Us._sancion}")
         elif h == 4:

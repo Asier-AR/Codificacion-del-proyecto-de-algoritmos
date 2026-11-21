@@ -32,7 +32,7 @@ while True: #menu principal
             print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
 
         if Us is not None and Us.iniciarSesion():
-            menuUsuario(Us, sistema, inventario, usuarios)
+            menuUsuario(Us, sistema, usuarios)
 
     elif x == 3:
         Op = None
@@ -46,7 +46,7 @@ while True: #menu principal
             print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
 
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
-            menuOperador(Op, usuarios, operadores, sistema, inventario)
+            menuOperador(Op, usuarios, operadores, sistema)
     else:
         print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion

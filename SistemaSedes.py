@@ -9,8 +9,8 @@ class Sede:
 
 class SistemaSede:
     def __init__(self, sedes=None, conexiones=None):
-        self._sedes = sedes if sedes is not None else []
-        self._vecinos = conexiones if conexiones is not None else []     # nombre -> {nombreVecino: distancia} guarda las distancias existentes entre sedes
+        self._sedes = sedes if sedes is not None else {}
+        self._vecinos = conexiones if conexiones is not None else {}     # nombre -> {nombreVecino: distancia} guarda las distancias existentes entre sedes
 
     def agregarSede(self, sede):
         self._sedes.append(sede)
