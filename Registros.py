@@ -1,5 +1,5 @@
 from Clases import Operador, usuario, libro, equipoComputacion, recurso, Inventario
-from main.SistemaSedes import *
+from SistemaSedes import *
 from Prestamos import Prestamo
 
 # DATOS DE PRUEBA: 550 registros (sin contar los operadores)
