@@ -2,6 +2,8 @@ from Clases import *
 from Prestamos import *
 from Registros import *
 from deshacer import *
+from SistemaSedes import *
+from ordenamientos import ordenarRecursos, mostrarRecursos
 sistema = SistemaPrestamos(SistemaSedes) #crea un objeto de la clase sistema de prestamos
 
 def mostrarInventario(sistema):
@@ -168,6 +170,57 @@ def registrarRecurso(): #permite registrar un recurso
     else:
         return recurso(nombre, cantidad)
 
+
+def verRecursosOrdenados(sistema):
+    """Muestra los recursos indicando claramente la sede de cada uno."""
+    criterios = {
+        1: ("prestamos", "más prestados"),
+        2: ("antiguedad", "más antiguos"),
+        3: ("categoria", "por categoría"),
+        4: ("estado", "por estado"),
+    }
+    nombresSedes = list(sistema._sistemaSede._sedes)
+    while True:
+        print("\n==============================")
+        print("     VER RECURSOS ORDENADOS")
+        print("==============================")
+        print("0. Regresar al menú del operador")
+        print("1. Ordenar por cantidad de préstamos")
+        print("2. Ordenar por fecha de ingreso")
+        print("3. Ordenar por categoría")
+        print("4. Ordenar por estado")
+        opcion = pedirNumero("Seleccione una forma de ordenamiento: ")
+        if opcion == 0:
+            return
+        if opcion not in criterios:
+            print("Opción no válida.")
+            continue
+
+        criterio, descripcion = criterios[opcion]
+        print("\n--- SELECCIONAR SEDE ---")
+        for numero, nombreSede in enumerate(nombresSedes, 1):
+            print(f"{numero}. {nombreSede}")
+        print(f"{len(nombresSedes) + 1}. Todas las sedes")
+        sedeElegida = pedirNumero("Seleccione una sede: ")
+        while sedeElegida < 1 or sedeElegida > len(nombresSedes) + 1:
+            sedeElegida = pedirNumero("Opción no válida. Seleccione una sede: ")
+        sedeFiltro = None if sedeElegida == len(nombresSedes) + 1 else nombresSedes[sedeElegida - 1]
+
+        filas, algoritmo, _ = ordenarRecursos(sistema, criterio, sedeFiltro)
+        explicaciones = {
+            "prestamos": "Ordenados desde el recurso con más préstamos.",
+            "antiguedad": "Ordenados desde el recurso más antiguo.",
+            "categoria": "Ordenados alfabéticamente por categoría.",
+            "estado": "El estado se estima según la cantidad acumulada de préstamos.",
+        }
+        print("\n" + "=" * 145)
+        print(f"RECURSOS ORDENADOS {descripcion.upper()}")
+        print(f"Sede consultada: {sedeFiltro if sedeFiltro else 'Todas las sedes'}.")
+        print(f"Algoritmo utilizado: {algoritmo}.")
+        print(explicaciones[criterio])
+        print("=" * 145)
+        mostrarRecursos(filas, criterio)
+
 def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y ejecuta el menu del operador
     historial = historialDe("op", Op._cedula) #pila de deshacer propia de este operador
     while True:
@@ -183,6 +236,7 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
         print("8. Mostar historial de los recursos")
         print("9. Dar de baja un recurso ")
         print("10. Deshacer la última operación")
+        print("11. Ver recursos ordenados")
         h = pedirNumero("Opción: ")
 
         if h == 0:
@@ -263,6 +317,9 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
 
         elif h == 10:
             historial.confirmarYDeshacer() #muestra la ultima operacion y pide confirmacion
+
+        elif h == 11:
+            verRecursosOrdenados(sistema)
 
         else:
             print("="*50 )

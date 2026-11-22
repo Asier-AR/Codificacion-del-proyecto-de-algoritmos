@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class persona: #clase padre que servira como base para todas las demas clases
     def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
         self._nombre = nombre
@@ -174,6 +176,7 @@ class recurso: #clase recurso que servira como base para las clases hijas libro 
         self._nombre=nombre
         self._cantidad=cantidad
         self._listaEspera=[]
+        self._fechaIngreso = datetime.now().strftime("%Y-%m-%d")
 
 class libro(recurso):
     def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):
