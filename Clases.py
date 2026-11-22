@@ -133,28 +133,31 @@ class Inventario:
     def __init__(self, inventario=None):
         self._inventarioDisponible = inventario if inventario is not None else {}
         self._Nodisponible = {}
-        self._libro = []
-        self._Equipo = []
+        self._libro = {}      # categoría -> [nombres]
+        self._Equipo = {}     # categoría -> [nombres]
         self._Otros = []
-
         for objeto in self._inventarioDisponible.values():
             self._clasificar(objeto)
 
-    def _clasificar(self, objeto):   # mete el nombre en la lista de su tipo
+    def _clasificar(self, objeto):
         if isinstance(objeto, libro):
-            self._libro.append(objeto._nombre)
+            self._libro.setdefault(objeto._categoria, []).append(objeto._nombre)
         elif isinstance(objeto, equipoComputacion):
-            self._Equipo.append(objeto._nombre)
+            self._Equipo.setdefault(objeto._categoria, []).append(objeto._nombre)
         else:
             self._Otros.append(objeto._nombre)
 
     def _desclasificar(self, objeto):
-        if isinstance(objeto, libro): #chequea si el objeto es de tipo libro si lo es devuelve verdadero
-            self._libro.remove(objeto._nombre) #remove elimina la primera aparicion de un elemento en la lista, pero como no hay nombres repetidos eliminara la unica que exista
-        elif isinstance(objeto, equipoComputacion): 
-            self._Equipo.remove(objeto._nombre)
+        if isinstance(objeto, libro):
+            arbol = self._libro
+        elif isinstance(objeto, equipoComputacion):
+            arbol = self._Equipo
         else:
-            self._Otros.remove(objeto._nombre)        
+            self._Otros.remove(objeto._nombre)
+            return
+        arbol[objeto._categoria].remove(objeto._nombre)
+        if not arbol[objeto._categoria]:      # si la categoría quedó vacía, se borra
+            del arbol[objeto._categoria]        
         
 
     def añadirRecurso(self, nuevo): #metodo que se encarga de añadir un recurso nuevo o si este recurso ya existe entonces añadira mas elementos a su cantidad
@@ -191,30 +194,33 @@ class Inventario:
         return True    
 
 
-class recurso: #clase recurso que servira como base para las clases hijas libro y equipoComputacion
+import random
+from datetime import date, timedelta
+
+class recurso:
     def __init__(self, nombre="", cantidad=0, fechaIngreso=None):
-        self._nombre=nombre
-        self._cantidad=cantidad
-        self._listaEspera=[]
-        self._fechaIngreso=fechaIngreso or self.generarFecha()
+        self._nombre = nombre
+        self._cantidad = cantidad
+        self._listaEspera = []
+        self._fechaIngreso = fechaIngreso or self.generarFecha()
 
     def generarFecha(self):
         inicio = date(2024, 1, 1)
         fin = date(2026, 11, 22)
-
-        dias_entre = (fin - inicio).days
-        fecha_aleatoria = inicio + timedelta(days=random.randrange(dias_entre + 1))
-        return fecha_aleatoria
+        dias = (fin - inicio).days
+        return (inicio + timedelta(days=random.randrange(dias + 1))).strftime("%Y-%m-%d")
 
 
 class libro(recurso):
-    def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):
+    def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion="", categoria="general"):
         super().__init__(nombre, cantidad)
-        self._autor=autor
-        self._fechaPublicacion=fechaPublicacion
+        self._autor = autor
+        self._fechaPublicacion = fechaPublicacion
+        self._categoria = categoria.strip().lower() or "general"
 
 
 class equipoComputacion(recurso):
-     def __init__(self, nombre="", cantidad=0, modelo=""):
-            super().__init__(nombre, cantidad)
-            self._modelo=modelo
+    def __init__(self, nombre="", cantidad=0, modelo="", categoria="general"):
+        super().__init__(nombre, cantidad)
+        self._modelo = modelo
+        self._categoria = categoria.strip().lower() or "general"

@@ -24,31 +24,35 @@ while True: #menu principal
 
     elif x==2:
         Us=None
-        for k in range (4):
-            cedula= pedirNumero("Ingrese su numero de cedula: ")
+        while True:
+            cedula= pedirNumero("Ingrese su numero de cedula o ingrese 0 si desea cancelar el proceso: ")
             if cedula in usuarios:
                 Us= usuarios[cedula]
                 break
             elif cedula in usuariosBaja:
                 print("Cuenta desactivada, contacte con un operador para mas informacion.")
                 break
-            print(f"Cédula no encontrada. Intentos restantes: {3 - k}")
-        else:
-            print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
+
+            elif cedula==0:
+                print("Cancelando el proceso volviendo al menu")
+                break
+
+            print(f"Cédula no encontrada")
+
 
         if Us is not None and Us.iniciarSesion():
             menuUsuario(Us, sistema, usuarios)
 
     elif x == 3:
         Op = None
-        for k in range(4):
-            cedula = pedirNumero("Ingrese su número de cedula: ")
+        while True:
+            cedula = pedirNumero("Ingrese su número de cedula o escriba 0 si desea cancelar el proceso: ")
             if cedula in operadores: #chequea que la cedula que se realize exista y este registrada
                 Op = operadores[cedula] #designa el objeto operador con todos los datos internos
                 break
-            print(f"Cédula no encontrada. Intentos restantes: {3 - k}") #determina el numero de intentos para ingresar la cedula
-        else:
-            print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
+            elif cedula==0:
+                print("Cancelando el proceso volviendo al menu")
+                break
 
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
             menuOperador(Op, usuarios, operadores, sistema, usuariosBaja)
