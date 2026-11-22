@@ -84,6 +84,7 @@ class SistemaSede:
 
     def buscarEnOtrasSedes(self, sedeOrigen, nombreRecurso):
         """
+        HU008 – interfaz de alto nivel para el menú.
         Imprime el resultado y devuelve la lista de (sede, distancia).
         """
         encontradas = self.sedesMasCarcanasConRecurso(sedeOrigen, nombreRecurso)

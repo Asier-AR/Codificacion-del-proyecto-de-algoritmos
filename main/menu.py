@@ -50,4 +50,3 @@ while True: #menu principal
     else:
         print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
-        print ("="*50)

@@ -22,12 +22,24 @@ def categoriaDe(rec): #la categoria sale de la clase del recurso (herencia): lib
         return "Otro"
 
 
+def estadoPorUso(cantidadPrestamos):
+    """Estima el estado por el uso acumulado del recurso."""
+    if cantidadPrestamos >= 15:
+        return "Defectuoso"
+    if cantidadPrestamos >= 10:
+        return "Desgastado"
+    if cantidadPrestamos >= 5:
+        return "Usado"
+    return "En buen estado"
+
+
 class FilaRecurso: #una fila del listado: los datos del recurso que se muestran y por los que se ordena
-    def __init__(self, rec, cantidadPrestamos, estado):
+    def __init__(self, rec, cantidadPrestamos, sede):
         self._nombre = rec._nombre
+        self._sede = sede
         self._nombreOrden = sinTildes(rec._nombre)  # el nombre sin tildes, que es el que se usa para desempatar
         self._categoria = categoriaDe(rec)
-        self._estado = estado                       # "Disponible" o "Agotado"
+        self._estado = estadoPorUso(cantidadPrestamos)
         self._disponibles = rec._cantidad           # unidades que hay ahora
         self._enEspera = len(rec._listaEspera)      # personas esperando el recurso
         self._prestamos = cantidadPrestamos         # prestamos que ha tenido en total
@@ -43,10 +55,8 @@ class FilaRecurso: #una fila del listado: los datos del recurso que se muestran 
         elif criterio == "categoria":
             return (self._categoria, self._nombreOrden)              # orden alfabetico de categoria
         elif criterio == "estado":
-            if self._estado == "Disponible":
-                orden = 0                                       # disponibles primero y agotados despues
-            else:
-                orden = 1
+            ordenEstados = {"Defectuoso": 0, "Desgastado": 1, "Usado": 2, "En buen estado": 3}
+            orden = ordenEstados[self._estado]
             return (orden, self._nombreOrden)
         return (self._nombreOrden, "")
 
@@ -128,21 +138,37 @@ def quickSort(lista, criterio): #avanzado: escoge un pivote y separa menores y m
 # ---------------------------------------------------------------
 # LISTADO DE RECURSOS
 # ---------------------------------------------------------------
-def crearFilas(sistema): #arma una fila por cada recurso, tanto de los disponibles como de los agotados
+def _coleccionInventario(inventario, *nombres):
+    """Obtiene una colección del inventario y tolera nombres antiguos."""
+    for nombre in nombres:
+        coleccion = getattr(inventario, nombre, None)
+        if coleccion is not None:
+            return coleccion
+    nombresTexto = ", ".join(nombres)
+    raise AttributeError(f"El inventario no tiene ninguno de estos atributos: {nombresTexto}")
+
+
+def crearFilas(sistema, sedeFiltro=None): #arma una fila por cada recurso de la sede elegida
     filas = []
-    for nombre in sistema._inventarioDisponible:
-        rec = sistema._inventarioDisponible[nombre]
-        filas.append(FilaRecurso(rec, len(sistema._historialRecursos.get(nombre, [])), "Disponible"))
-    for nombre in sistema._inventarioNoDisponible:
-        rec = sistema._inventarioNoDisponible[nombre]
-        filas.append(FilaRecurso(rec, len(sistema._historialRecursos.get(nombre, [])), "Agotado"))
+    for sede in sistema._sistemaSede._sedes:
+        if sedeFiltro is not None and sede != sedeFiltro:
+            continue
+        inventario = sistema._inv(sede)
+        disponibles = _coleccionInventario(inventario, "_inventarioDisponible", "inventarioDisponible")
+        noDisponibles = _coleccionInventario(inventario, "_Nodisponible", "Nodisponible", "_inventarioNoDisponible")
+        for nombre, rec in disponibles.items():
+            prestamos = len(sistema._historialRecursos.get((sede, nombre), []))
+            filas.append(FilaRecurso(rec, prestamos, sede))
+        for nombre, rec in noDisponibles.items():
+            prestamos = len(sistema._historialRecursos.get((sede, nombre), []))
+            filas.append(FilaRecurso(rec, prestamos, sede))
     return filas
 
 
-def ordenarRecursos(sistema, criterio, invertir=False):
+def ordenarRecursos(sistema, criterio, sedeFiltro=None, invertir=False):
     # criterio: "prestamos", "antiguedad", "categoria" o "estado"
     # devuelve la lista ordenada, el nombre del algoritmo usado y lo que se demoro (en segundos)
-    filas = crearFilas(sistema)
+    filas = crearFilas(sistema, sedeFiltro)
     inicio = time.perf_counter()
     if criterio == "prestamos":
         ordenadas = mergeSort(filas, criterio)
@@ -164,22 +190,31 @@ def ordenarRecursos(sistema, criterio, invertir=False):
     return ordenadas, algoritmo, segundos
 
 
-def mostrarRecursos(filas, limite=0): #imprime la tabla, limite = cuantas filas mostrar (0 = todas)
+def mostrarRecursos(filas, criterio, limite=0): #muestra solo los datos relevantes del orden elegido
     if len(filas) == 0:
         print("No hay recursos para mostrar.")
         return
-    print(f"{'#':>4}  {'Recurso':<46} {'Categoría':<22} {'Estado':<11} {'Disp.':>5} {'Espera':>6} {'Préstamos':>9}  {'Ingreso'}")
-    print("-" * 125)
+    columnas = {
+        "prestamos": ("RECURSO", "PRÉSTAMOS"),
+        "antiguedad": ("RECURSO",),
+        "categoria": ("RECURSO", "CATEGORÍA"),
+        "estado": ("RECURSO", "ESTADO"),
+    }
+    nombresColumnas = ("SEDE",) + columnas[criterio]
+    print("  ".join(f"{nombre:<24}" for nombre in nombresColumnas))
+    print("-" * (26 * len(nombresColumnas)))
     contador = 0
     for fila in filas:
         contador += 1
         if limite > 0 and contador > limite:
             break
-        print(f"{contador:>4}  {fila._nombre:<46} {fila._categoria:<22} {fila._estado:<11} {fila._disponibles:>5} {fila._enEspera:>6} {fila._prestamos:>9}  {fila._fechaIngreso}")
+        datos = {
+            "prestamos": (fila._sede, fila._nombre, fila._prestamos),
+            "antiguedad": (fila._sede, fila._nombre),
+            "categoria": (fila._sede, fila._nombre, fila._categoria),
+            "estado": (fila._sede, fila._nombre, fila._estado),
+        }[criterio]
+        print("  ".join(f"{str(dato):<24}" for dato in datos))
 
-    disponibles = 0
-    for fila in filas:
-        if fila._estado == "Disponible":
-            disponibles += 1
-    print("-" * 125)
-    print(f"Total: {len(filas)} recursos | Disponibles: {disponibles} | Agotados: {len(filas) - disponibles}")
+    print("-" * (26 * len(nombresColumnas)))
+    print(f"Total: {len(filas)} recursos")

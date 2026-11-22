@@ -41,7 +41,6 @@ class SistemaSede:
 
     def sedesMasCarcanasConRecurso(self, sedeOrigen, nombreRecurso):
         """
-        HU008 – Escenario 1 y 2.
         Busca en todas las sedes (excepto sedeOrigen) si tienen el recurso
         disponible (en inventarioDisponible, no en Nodisponible).
         Devuelve una lista de tuplas (nombreSede, distancia) ordenada por
