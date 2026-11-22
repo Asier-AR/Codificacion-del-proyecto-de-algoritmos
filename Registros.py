@@ -212,6 +212,7 @@ usuarios = {
     1093887119: usuario("Asier", "Arguinzones", 1093887119, "Grimm", "1020Asier")
 }
 
+usuariosBaja={}
 # 2. DICCIONARIO DE 150 RECURSOS (INVENTARIO)
 # OJO: la cantidad de cada recurso es el STOCK TOTAL. Al cargar el historial (cargarHistorial)
 # se descuentan las unidades de los prestamos que siguen activos.

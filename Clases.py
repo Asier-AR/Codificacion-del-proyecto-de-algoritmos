@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+import random
 class persona: #clase padre que servira como base para todas las demas clases
     def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
         self._nombre = nombre
@@ -33,7 +35,8 @@ class Operador(persona): #clase operador hija de persona
         super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
     # sin iniciarSesion: la hereda de persona
 
-    def buscador(self, registrados): #permite buscar un usuario 
+    def buscador(self, registrados, baja): #permite buscar un usuario
+        estado="Activo" 
         try: #se encarga de que el usuario solo pueda digitar numeros y no letras
             cedulaBuscar = int(input("Ingrese la cédula que desea buscar: ")) 
         except ValueError: #manda error si el usuario digita letras y cancela el proceso
@@ -41,8 +44,10 @@ class Operador(persona): #clase operador hija de persona
             return -1
         u = registrados.get(cedulaBuscar) #el .get(cedulabuscar) permite que el diccionario devuelva None en ves de key error si la cedula no existe
         if u is None: #determina que el usuario no existe o no esta registrado
-            print("Usuario no encontrado.")
-            return -1
+            u=baja.get(cedulaBuscar)
+            estado="Desactivado"
+            if u is None:
+                print("Usuario no encontrado")
         #segmento que escribe todos los datos del usuario
         print("Usuario encontrado:") 
         print(f"Nombre: {u._nombre}")
@@ -52,11 +57,13 @@ class Operador(persona): #clase operador hija de persona
         print("Objetos reservados:")
         for obj in u._objetosReservados:
             print(f" - {obj}")
+        print(f"Estado: {estado}")
 
-    def mostrarUsuarios(self, registrados): #metodo que printea todos los usuarios registrados junto a sus datos
+    def mostrarUsuarios(self, registrados, baja): #metodo que printea todos los usuarios registrados junto a sus datos
         if not registrados:
             print("No hay usuarios registrados.")
             return
+        print("="*50," Usuarios Activos ", "="*50)
         for u in registrados.values():
             print(f"Nombre: {u._nombre}")
             print(f"Apellido: {u._apellido}")
@@ -69,6 +76,21 @@ class Operador(persona): #clase operador hija de persona
             else:
                 print("Objetos reservados: Ninguno")
             print("-" * 30)
+
+        print("="*50," Usuarios Inactivos ", "="*50)
+        for u in baja.values():
+            print(f"Nombre: {u._nombre}")
+            print(f"Apellido: {u._apellido}")
+            print(f"Cédula: {u._cedula}")
+            print(f"Sanción: {u._sancion}")
+            if u._objetosReservados:
+                print("Objetos reservados:")
+                for obj in u._objetosReservados:
+                    print(f" - {obj}")
+            else:
+                print("Objetos reservados: Ninguno")
+            print("-" * 30)
+
     def eliminarUsuario(self, registrados): #metodo que elimina a un usuario 
         try:
             cedulaBuscar = int(input("Ingrese la cédula del usuario que desea eliminar: "))
@@ -170,10 +192,20 @@ class Inventario:
 
 
 class recurso: #clase recurso que servira como base para las clases hijas libro y equipoComputacion
-    def __init__(self, nombre="", cantidad=0):
+    def __init__(self, nombre="", cantidad=0, fechaIngreso=None):
         self._nombre=nombre
         self._cantidad=cantidad
         self._listaEspera=[]
+        self._fechaIngreso=fechaIngreso or self.generarFecha()
+
+    def generarFecha(self):
+        inicio = date(2024, 1, 1)
+        fin = date(2026, 11, 22)
+
+        dias_entre = (fin - inicio).days
+        fecha_aleatoria = inicio + timedelta(days=random.randrange(dias_entre + 1))
+        return fecha_aleatoria
+
 
 class libro(recurso):
     def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):

@@ -15,6 +15,8 @@ while True: #menu principal
         nombre, apellido, cedula, nombreUsuario, contraseña = registro()
         if cedula in usuarios:
             print("Cédula ya registrada, cancelando proceso.")
+        elif cedula in usuariosBaja:
+            print("Esta cedula ya existe pero la cuenta esta desactivada, contacte un operador para mas informacion")
         else:
             nuevoUs = usuario(nombre, apellido, cedula, nombreUsuario, contraseña)
             usuarios[cedula] = nuevoUs
@@ -26,6 +28,9 @@ while True: #menu principal
             cedula= pedirNumero("Ingrese su numero de cedula: ")
             if cedula in usuarios:
                 Us= usuarios[cedula]
+                break
+            elif cedula in usuariosBaja:
+                print("Cuenta desactivada, contacte con un operador para mas informacion.")
                 break
             print(f"Cédula no encontrada. Intentos restantes: {3 - k}")
         else:
@@ -46,7 +51,7 @@ while True: #menu principal
             print("Intentos agotados para ingresar una cédula válida, volviendo al menú.")
 
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
-            menuOperador(Op, usuarios, operadores, sistema)
+            menuOperador(Op, usuarios, operadores, sistema, usuariosBaja)
     else:
         print("="*50 )
         print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
