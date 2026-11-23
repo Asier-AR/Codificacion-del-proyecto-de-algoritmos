@@ -1,50 +1,134 @@
-from Clases import *
-from Prestamos import *
-from Registros import *
-from deshacer import *
-from SistemaSedes import *
-from ordenamientos import ordenarRecursos, mostrarRecursos
+from UsuariosOperadores import Operador, usuario
+from Inventarios import Inventario, libro, equipoComputacion, recurso
+from SistemaSedes import Sede, SistemaSede
+from deshacer import (
+    Pila,
+    Operacion,
+    OpRegistro,
+    OpEliminarPersona,
+    OpSancion,
+    OpAnadirRecurso,
+    OpBajaRecurso,
+    OpPrestamo,
+    OpDevolucion,
+    OpListaEspera,
+    HistorialOperaciones,
+)
+from Prestamos import Prestamo, SistemaPrestamos
+from Registros import (
+    usuarios,
+    usuariosBaja,
+    sistemaInventario_dict1,
+    sistemaInventario_dict2,
+    sistemaInventario_dict3,
+    sistemaInventario_dict4,
+    historialPrestamos,
+    operadores,
+    inventario1,
+    inventario2,
+    inventario3,
+    inventario4,
+    sedeCentro,
+    sedeNorte,
+    sedeSur,
+    sedeEmprendimiento,
+    sedes,
+    conexiones,
+    SistemaSedes,
+)
+from ordenamientos import (
+    sinTildes,
+    categoriaDe,
+    FilaRecurso,
+    burbuja,
+    insercion,
+    mergeSort,
+    quickSort,
+    crearFilas,
+    ordenarRecursos,
+    mostrarRecursos,
+    FilaConteo,
+    informePrestamos,
+)
+
 sistema = SistemaPrestamos(SistemaSedes) #crea un objeto de la clase sistema de prestamos
 
+def elegirCategoria(sistema, sedes, atributo):
+    categorias = []
+    for nombreSede in sedes:
+        for c in getattr(sistema._inv(nombreSede), atributo):
+            if c not in categorias:
+                categorias.append(c)
+    if not categorias:
+        print("No hay categorías en esa selección.")
+        return None
+    for i, c in enumerate(categorias, 1):
+        print(f"{i}. {c}")
+    num = pedirNumero("Ingrese el numero de la categoria: ")
+    while num < 1 or num > len(categorias):
+        num = pedirNumero("Numero no valido, intente de nuevo: ")
+    return categorias[num - 1]
+
+
+def imprimirRecurso(inv, x):          # evita repetir el bloque de impresión
+    if x in inv._inventarioDisponible:
+        obj = inv._inventarioDisponible[x]
+        cantidad = obj._cantidad
+    else:
+        obj = inv._Nodisponible[x]
+        cantidad = "Agotado (puede unirse a la lista de espera)"
+    print(f"Nombre: {x}")
+    if isinstance(obj, libro):
+        print(f"Autor: {obj._autor}")
+        print(f"Fecha de publicacion: {obj._fechaPublicacion}")
+    elif isinstance(obj, equipoComputacion):
+        print(f"Modelo: {obj._modelo}")
+    print(f"Cantidad: {cantidad}\n")
+
+
 def mostrarInventario(sistema):
-    nombres = list(sistema._sistemaSede._sedes)
-    filtroSede = None
+    sedes = list(sistema._sistemaSede._sedes)
     eleccion = input("¿Desea buscar en alguna sede en especifico? (S/N) ").lower().strip()
     if eleccion in ("s", "si"):
-        for i, n in enumerate(nombres, 1):
-            print(f"{i}. {n}")
-        num = pedirNumero("Ingrese el numero de la sede: ")
-        while num < 1 or num > len(nombres):
-            num = pedirNumero("Numero no valido, intente de nuevo: ")
-        filtroSede = nombres[num - 1] #esto ya que se si se quiere acceder a la sede 1 realmente se estaria accidiendo a la posicion 0 de la lista
+        sedes = [elegirSede(sistema)]
     else:
         print("Se mostrara el inventario de todas las sedes.")
 
     print("Que tipo de articulo desea ver.")
     print("1. Libros\n2. Equipo de computacion\n3. Otros")
     filtro = pedirNumero("Cualquier otro numero muestra todo: ")
-    listas = {1: "_libro", 2: "_Equipo", 3: "_Otros"}
+    atributos = {1: "_libro", 2: "_Equipo"}
 
-    for nombreSede in ([filtroSede] if filtroSede else nombres):
+    categoria = None
+    if filtro in atributos:
+        if input("¿Desea filtrar por una categoria? (S/N) ").lower().strip() in ("s", "si"):
+            categoria = elegirCategoria(sistema, sedes, atributos[filtro])
+            if categoria is None:
+                return
+
+    for nombreSede in sedes:
         inv = sistema._inv(nombreSede)
         print("\n" + "=" * 20, nombreSede, "=" * 20)
-        if filtro in listas:
-            lista = getattr(inv, listas[filtro])
+        if filtro in atributos:
+            arbol = getattr(inv, atributos[filtro])
+            for cat, nombres in arbol.items():
+                if categoria is not None and cat != categoria:
+                    continue
+                print(f"--- {cat} ---")
+                for x in nombres:
+                    imprimirRecurso(inv, x)
+        elif filtro == 3:
+            for x in inv._Otros:
+                imprimirRecurso(inv, x)
         else:
-            lista = list(inv._inventarioDisponible) + list(inv._Nodisponible)
-        for x in lista:
-            if x in inv._inventarioDisponible:
-                obj = inv._inventarioDisponible[x]
-                cantidad = obj._cantidad
-            else:
-                obj = inv._Nodisponible[x]
-                cantidad = "Agotado (puede unirse a la lista de espera)"
-            print(f"Nombre: {x}")
-            if isinstance(obj, libro):
-                print(f"Autor: {obj._autor}")
-            elif isinstance(obj, equipoComputacion):
-                print(f"Modelo: {obj._modelo}")
-            print(f"Cantidad: {cantidad}\n")
+            for x in list(inv._inventarioDisponible) + list(inv._Nodisponible):
+                imprimirRecurso(inv, x)
+        
+
+
+            
+
+
 
 def elegirSede(sistema):
     nombres = list(sistema._sistemaSede._sedes)
@@ -54,6 +138,10 @@ def elegirSede(sistema):
     while num < 1 or num > len(nombres):
         num = pedirNumero("Numero no valido, intente de nuevo: ")
     return nombres[num - 1]
+
+
+
+
 
 def cargarHistorial(sistema):
     for numero, cedula, nombreRecurso, fechaPrestamo, fechaDevolucion in historialPrestamos:
@@ -162,66 +250,29 @@ def registrarRecurso(): #permite registrar un recurso
 
     if h == 1:
         modelo = input("Ingrese el modelo del equipo: ")
-        return equipoComputacion(nombre, cantidad, modelo)
+        categoria = input("Ingrese la categoría del equipo: ")
+        return equipoComputacion(nombre, cantidad, modelo, categoria)
     elif h == 2:
         autor = input("Ingrese el autor del libro: ")
         fecha = input("Ingrese el año de publicación (por ejemplo 1918): ")
-        return libro(nombre, cantidad, autor, fecha)
+        categoria = input("Ingrese la categoría del libro: ")
+        return libro(nombre, cantidad, autor, fecha, categoria)
     else:
         return recurso(nombre, cantidad)
 
+def verDisponibilidad(sistema):
+    nombreSede=elegirSede(sistema)
+    Nombre=input("Ingrese el nombre del recurso: ").strip().lower()
+    inventario=sistema._inv(nombreSede)
+    if Nombre in inventario._inventarioDisponible:
+        print(f"El recurso {Nombre} se encuentra disponible y se tiene un stock de: {inventario._inventarioDisponible[Nombre]._cantidad}")
+    elif Nombre in inventario._Nodisponible:
+        print(f"El recurso si existe en la {nombreSede} pero no se encuentra disponible en este momento")
+        sistema._sistemaSede.buscarEnOtrasSedes(nombreSede, Nombre)
+    else:
+        sistema._sistemaSede.buscarEnOtrasSedes(nombreSede, Nombre)
 
-def verRecursosOrdenados(sistema):
-    """Muestra los recursos indicando claramente la sede de cada uno."""
-    criterios = {
-        1: ("prestamos", "más prestados"),
-        2: ("antiguedad", "más antiguos"),
-        3: ("categoria", "por categoría"),
-        4: ("estado", "por estado"),
-    }
-    nombresSedes = list(sistema._sistemaSede._sedes)
-    while True:
-        print("\n==============================")
-        print("     VER RECURSOS ORDENADOS")
-        print("==============================")
-        print("0. Regresar al menú del operador")
-        print("1. Ordenar por cantidad de préstamos")
-        print("2. Ordenar por fecha de ingreso")
-        print("3. Ordenar por categoría")
-        print("4. Ordenar por estado")
-        opcion = pedirNumero("Seleccione una forma de ordenamiento: ")
-        if opcion == 0:
-            return
-        if opcion not in criterios:
-            print("Opción no válida.")
-            continue
-
-        criterio, descripcion = criterios[opcion]
-        print("\n--- SELECCIONAR SEDE ---")
-        for numero, nombreSede in enumerate(nombresSedes, 1):
-            print(f"{numero}. {nombreSede}")
-        print(f"{len(nombresSedes) + 1}. Todas las sedes")
-        sedeElegida = pedirNumero("Seleccione una sede: ")
-        while sedeElegida < 1 or sedeElegida > len(nombresSedes) + 1:
-            sedeElegida = pedirNumero("Opción no válida. Seleccione una sede: ")
-        sedeFiltro = None if sedeElegida == len(nombresSedes) + 1 else nombresSedes[sedeElegida - 1]
-
-        filas, algoritmo, _ = ordenarRecursos(sistema, criterio, sedeFiltro)
-        explicaciones = {
-            "prestamos": "Ordenados desde el recurso con más préstamos.",
-            "antiguedad": "Ordenados desde el recurso más antiguo.",
-            "categoria": "Ordenados alfabéticamente por categoría.",
-            "estado": "El estado se estima según la cantidad acumulada de préstamos.",
-        }
-        print("\n" + "=" * 145)
-        print(f"RECURSOS ORDENADOS {descripcion.upper()}")
-        print(f"Sede consultada: {sedeFiltro if sedeFiltro else 'Todas las sedes'}.")
-        print(f"Algoritmo utilizado: {algoritmo}.")
-        print(explicaciones[criterio])
-        print("=" * 145)
-        mostrarRecursos(filas, criterio)
-
-def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y ejecuta el menu del operador
+def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las opciones y ejecuta el menu del operador
     historial = historialDe("op", Op._cedula) #pila de deshacer propia de este operador
     while True:
         print("\n--- MENÚ OPERADOR ---")
@@ -234,16 +285,18 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
         print("6. Añadir un nuevo recurso")
         print("7. Eliminar un usuario")
         print("8. Mostar historial de los recursos")
-        print("9. Dar de baja un recurso ")
-        print("10. Deshacer la última operación")
-        print("11. Ver recursos ordenados")
+        print("9. Dar de baja un recurso.")
+        print("10. Deshacer la última operación.")
+        print("11. Listar recursos ordenados.")
+        print("12. Mostrar listado de prestamos")
+        print("13. Ver disponibilidad de un recurso")
         h = pedirNumero("Opción: ")
 
         if h == 0:
             print("Saliendo del menú del operador")
             break
         elif h == 1:
-            Op.buscador(usuarios) #permite buscar un usuario
+            Op.buscador(usuarios, usuariosBaja) #permite buscar un usuario
         elif h == 2:
             nombre, apellido, cedula, nombreUsuario, contraseña = registro() #permite registrar un operador
             if cedula in operadores:
@@ -254,7 +307,7 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
                 if confirmarRegistro("operador", operadores, cedula, nuevoOp): #si lo confirma, queda en la pila para poder deshacerlo despues
                     historial.registrar(OpRegistro("operador", operadores, cedula, nuevoOp))
         elif h == 3: #permite printear todos los usuarios
-            Op.mostrarUsuarios(usuarios)
+            Op.mostrarUsuarios(usuarios, usuariosBaja)
         elif h==4: #permite sancionar un usuario usando su numero de cedula
             cedula= pedirNumero("Ingrese la cedula del usuario: ")
             if cedula in usuarios:
@@ -284,7 +337,7 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
                 else:
                     print("Opcion invalida cancelando proceso")
             else:
-                print("La cedula que se introdujo no esta registrada")
+                print("La cedula que se introdujo no esta registrada, o la cuenta del usuario esta desactivada")
         elif h==6:
             sede=elegirSede(sistema)
             inventario=sistema._inv(sede)
@@ -296,7 +349,8 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
         elif h == 7:
             eliminado = Op.eliminarUsuario(usuarios) #devuelve el usuario eliminado o None si no se elimino nada
             if eliminado is not None:
-                historial.registrar(OpEliminarPersona("usuario", usuarios, eliminado._cedula, eliminado))
+                usuariosBaja[eliminado._cedula]=eliminado
+                historial.registrar(OpEliminarPersona("usuario", usuarios, eliminado._cedula, eliminado, usuariosBaja))
 
         elif h==8:
             sede=elegirSede(sistema)
@@ -317,14 +371,42 @@ def menuOperador(Op, usuarios, operadores, sistema): #printea las opciones y eje
 
         elif h == 10:
             historial.confirmarYDeshacer() #muestra la ultima operacion y pide confirmacion
+        
+        elif h==11:
+            
+            print("Desea ver los recurso de \n 1. Todas las sedes \n 2. Una sede")
+            eleccion=pedirNumero("Escriba el numero que aparece alfrente de la opcion: ")
+            if eleccion==2:
+                sede=[elegirSede(sistema)]
+            else:
+                sede=list(sistema._sistemaSede._sedes)
 
-        elif h == 11:
-            verRecursosOrdenados(sistema)
+            print("Ordenar por: \n 1. Mas prestados \n 2. antiguedad \n 3. categoria\n 4. estado ")
+            criterio=pedirNumero("Opcion: ")
+            criterios = {1: "prestamos", 2: "antiguedad", 3: "categoria", 4: "estado"}
+            while criterio not in criterios:
+                criterio=pedirNumero("Opcion no valida intentelo de nuevo: ")
+            invertir = input("¿Invertir el orden? (S/N): ").strip().lower() in ("s", "si") # el in ocaciona devuelve verdadero si el usuario escribe s o si, 
+            # pero si escribe cualquier otra cosa devuelve falso
+            limite = pedirNumero("Cuántas filas mostrar (0 = todas): ")
+            filas, algoritmo, segundos = ordenarRecursos(sistema, sede, criterios[criterio], invertir)
+            mostrarRecursos(filas, limite)
+            print(f"Ordenado con {algoritmo} en {segundos:.6f} s")
+            
+        elif h == 12:
+            limite = pedirNumero("Cuántos objetos mostrar (0 = todos): ")
+            informePrestamos(sistema, limite)         
+
+        elif h==13:
+            verDisponibilidad(sistema)
 
         else:
             print("="*50 )
-            print("Opción no válida.") #evita que se escriban cosas como 5 que no tengan opcion
+            print("Opción no válida.") #evita que se escriban cosas que no tengan opcion
             print ("="*50)
+
+
+
 
 def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy esta en proceso
     historial = historialDe("us", Us._cedula) #pila de deshacer propia de este usuario
@@ -333,13 +415,14 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
     while True:
         print(f"\n--- MENÚ Usuario de: {Us._nombre} ---")
         print("0. Salir del menú del Usuario")
-        print("1. Ver recursos disponibles ")
-        print("2. Realizar un prestamo")
-        print("3. Revisar datos propios")
-        print("4. Devolver un objeto")
-        print("5. Ver historial de usuario")
-        print("6. Deshacer mi última acción")
-        print("7. Ver notificaciones") #NUEVO
+        print("1. Ver inventarios ")
+        print("2. Ver disponibilidad de un recurso")
+        print("3. Realizar un prestamo")
+        print("4. Revisar datos propios")
+        print("5. Devolver un objeto")
+        print("6. Ver historial de usuario")
+        print("7. Deshacer mi última acción")
+        print("8. Ver notificaciones") #NUEVO
         h = pedirNumero("Opción: ")
 
         if h==0:
@@ -349,14 +432,19 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
         elif h==1:
            mostrarInventario(sistema)
         elif h==2:
+            verDisponibilidad(sistema)
+                
+
+
+        elif h==3:
             sede=elegirSede(sistema)
 
             Recurso=input("Ingrese el recurso que desea reservar ").strip().lower() #NUEVO: strip quita espacios sobrantes para que no falle por un espacio al final
 
             sistema.prestar(Us, sede, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
-        elif h==3:
+        elif h==4:
             print(f"Nombre: {Us._nombre} \n Apellido: {Us._apellido} \n Nombre de usuario: {Us._nombreUsuario} \n Recursos Reservados: {Us._objetosReservados} \n Sancion: {Us._sancion}")
-        elif h == 4:
+        elif h == 5:
             activos = sistema.prestamosActivos(Us)
             if not activos:
                 print("No tienes préstamos activos.")
@@ -366,11 +454,11 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
                     print(" -", p)
                 numero = pedirNumero("Número del préstamo a devolver: ")
                 sistema.devolver(Us, numero, usuarios, historial) #la devolucion tambien queda en la pila
-        elif h==5:
-            sistema.verHistorialUsuario(Us)
         elif h==6:
+            sistema.verHistorialUsuario(Us)
+        elif h==7:
             historial.confirmarYDeshacer() #muestra la ultima accion del usuario y pide confirmacion
-        elif h==7: #NUEVO: muestra las notificaciones del buzon (por ejemplo, que lo sacaron de una lista de espera por una sancion)
+        elif h==8: #NUEVO: muestra las notificaciones del buzon (por ejemplo, que lo sacaron de una lista de espera por una sancion)
             if not Us._buzon:
                 print("No tienes notificaciones.")
             else:

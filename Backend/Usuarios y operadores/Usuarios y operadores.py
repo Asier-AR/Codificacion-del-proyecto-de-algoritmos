@@ -1,5 +1,3 @@
-from datetime import datetime
-
 class persona: #clase padre que servira como base para todas las demas clases
     def __init__(self, nombre="", apellido="", cedula=0, nombreUsuario="", contraseña=""):
         self._nombre = nombre
@@ -35,7 +33,8 @@ class Operador(persona): #clase operador hija de persona
         super().__init__(nombre, apellido, cedula, nombreUsuario, contraseña)
     # sin iniciarSesion: la hereda de persona
 
-    def buscador(self, registrados): #permite buscar un usuario 
+    def buscador(self, registrados, baja): #permite buscar un usuario
+        estado="Activo" 
         try: #se encarga de que el usuario solo pueda digitar numeros y no letras
             cedulaBuscar = int(input("Ingrese la cédula que desea buscar: ")) 
         except ValueError: #manda error si el usuario digita letras y cancela el proceso
@@ -43,8 +42,10 @@ class Operador(persona): #clase operador hija de persona
             return -1
         u = registrados.get(cedulaBuscar) #el .get(cedulabuscar) permite que el diccionario devuelva None en ves de key error si la cedula no existe
         if u is None: #determina que el usuario no existe o no esta registrado
-            print("Usuario no encontrado.")
-            return -1
+            u=baja.get(cedulaBuscar)
+            estado="Desactivado"
+            if u is None:
+                print("Usuario no encontrado")
         #segmento que escribe todos los datos del usuario
         print("Usuario encontrado:") 
         print(f"Nombre: {u._nombre}")
@@ -54,11 +55,13 @@ class Operador(persona): #clase operador hija de persona
         print("Objetos reservados:")
         for obj in u._objetosReservados:
             print(f" - {obj}")
+        print(f"Estado: {estado}")
 
-    def mostrarUsuarios(self, registrados): #metodo que printea todos los usuarios registrados junto a sus datos
+    def mostrarUsuarios(self, registrados, baja): #metodo que printea todos los usuarios registrados junto a sus datos
         if not registrados:
             print("No hay usuarios registrados.")
             return
+        print("="*50," Usuarios Activos ", "="*50)
         for u in registrados.values():
             print(f"Nombre: {u._nombre}")
             print(f"Apellido: {u._apellido}")
@@ -71,6 +74,21 @@ class Operador(persona): #clase operador hija de persona
             else:
                 print("Objetos reservados: Ninguno")
             print("-" * 30)
+
+        print("="*50," Usuarios Inactivos ", "="*50)
+        for u in baja.values():
+            print(f"Nombre: {u._nombre}")
+            print(f"Apellido: {u._apellido}")
+            print(f"Cédula: {u._cedula}")
+            print(f"Sanción: {u._sancion}")
+            if u._objetosReservados:
+                print("Objetos reservados:")
+                for obj in u._objetosReservados:
+                    print(f" - {obj}")
+            else:
+                print("Objetos reservados: Ninguno")
+            print("-" * 30)
+
     def eliminarUsuario(self, registrados): #metodo que elimina a un usuario 
         try:
             cedulaBuscar = int(input("Ingrese la cédula del usuario que desea eliminar: "))
@@ -108,84 +126,3 @@ class Operador(persona): #clase operador hija de persona
         else: #si el usuario no esta sancionado le avisa al operador y no hace nada
             print(f"El usuario {Us._nombre} {Us._apellido} no posee ninguna sancion activa")
             return False
-
-class Inventario:
-    def __init__(self, inventario=None):
-        self._inventarioDisponible = inventario if inventario is not None else {}
-        self._Nodisponible = {}
-        self._libro = []
-        self._Equipo = []
-        self._Otros = []
-
-        for objeto in self._inventarioDisponible.values():
-            self._clasificar(objeto)
-
-    def _clasificar(self, objeto):   # mete el nombre en la lista de su tipo
-        if isinstance(objeto, libro):
-            self._libro.append(objeto._nombre)
-        elif isinstance(objeto, equipoComputacion):
-            self._Equipo.append(objeto._nombre)
-        else:
-            self._Otros.append(objeto._nombre)
-
-    def _desclasificar(self, objeto):
-        if isinstance(objeto, libro): #chequea si el objeto es de tipo libro si lo es devuelve verdadero
-            self._libro.remove(objeto._nombre) #remove elimina la primera aparicion de un elemento en la lista, pero como no hay nombres repetidos eliminara la unica que exista
-        elif isinstance(objeto, equipoComputacion): 
-            self._Equipo.remove(objeto._nombre)
-        else:
-            self._Otros.remove(objeto._nombre)        
-        
-
-    def añadirRecurso(self, nuevo): #metodo que se encarga de añadir un recurso nuevo o si este recurso ya existe entonces añadira mas elementos a su cantidad
-        nombre = nuevo._nombre 
-        if nombre in self._inventarioDisponible: #añade mas cantidad de objetos al recurso si este existe
-            print(f"El recurso {nombre} ya existe añadiendo cantidad ingresada al recurso ")
-            self._inventarioDisponible[nombre]._cantidad += nuevo._cantidad
-        elif nombre in self._Nodisponible: #verifica que el recurso no este en la lista de nodisponibles y si esta le añade la cantidad y luego lo mueve a disponibles
-            self._Nodisponible[nombre]._cantidad += nuevo._cantidad
-            self._inventarioDisponible[nombre] = self._Nodisponible.pop(nombre)
-        else: #crea un recurso nuevo si este no se encuentra repetido 
-            self._inventarioDisponible[nombre] = nuevo
-            self._clasificar(nuevo)
-        return True
-
-    def darDeBajaRecurso(self, nombre): #sirve para eliminar un recurso del inventario 
-        if nombre in self._inventarioDisponible:
-            recurso = self._inventarioDisponible[nombre]  #si el objeto esta en inventario disponible crea una variable recurso que guardara el objeto atado a la clave nombre
-            diccionario = self._inventarioDisponible #crea una variable diccionario que realmente es el inventario disponible
-        elif nombre in self._Nodisponible: #repite los mismos pasos si el recurso esta en inventario no disponible
-            recurso = self._Nodisponible[nombre] 
-            diccionario = self._Nodisponible
-        else: #si no existe en ninguno de los dos el recurso no existe 
-            print("El recurso que deseas dar de baja no existe o se introdujo mal su nombre.")
-            return False
-
-        if recurso._listaEspera: #si hay usuarios en la lista de espera del recurso este no se puede dar de baja
-            print("No se puede dar de baja: hay usuarios en la lista de espera.")
-            return False
-        self._desclasificar(recurso)
-        del diccionario[nombre] #elimina el recurso
-        print(f"Recurso '{nombre}' dado de baja.")
-
-        return True    
-
-
-class recurso: #clase recurso que servira como base para las clases hijas libro y equipoComputacion
-    def __init__(self, nombre="", cantidad=0):
-        self._nombre=nombre
-        self._cantidad=cantidad
-        self._listaEspera=[]
-        self._fechaIngreso = datetime.now().strftime("%Y-%m-%d")
-
-class libro(recurso):
-    def __init__(self, nombre="", cantidad=0, autor="", fechaPublicacion=""):
-        super().__init__(nombre, cantidad)
-        self._autor=autor
-        self._fechaPublicacion=fechaPublicacion
-
-
-class equipoComputacion(recurso):
-     def __init__(self, nombre="", cantidad=0, modelo=""):
-            super().__init__(nombre, cantidad)
-            self._modelo=modelo
