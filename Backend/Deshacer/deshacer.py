@@ -213,5 +213,7 @@ class HistorialOperaciones: #envuelve una Pila de operaciones, menu.py crea uno 
         eleccion = input("Digite 1 para deshacerla, 2 para cancelar: ")
         if eleccion == "1":
             self.deshacerUltima()
-        else:
+        elif eleccion == "2":
             print("Acción cancelada.") #cualquier otra cosa cancela, la operacion sigue en la pila
+        else:
+            print("Opción inválida. Acción cancelada, vuelva a intentarlo")
