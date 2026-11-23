@@ -111,8 +111,13 @@ class OpAnadirRecurso(Operacion):
         r._cantidad = nueva #3. se restan las unidades
         if nueva == 0: #si no queda nada hay que acomodar el recurso
             if self._eraNuevo and not r._listaEspera:
+                if self._nombre in disp:
+                    self._inventario._desclasificar(disp[self._nombre])
+                else:
+                    self._inventario._desclasificar(nodisp[self._nombre])
                 disp.pop(self._nombre, None) #el recurso no existia antes: se borra (None evita error si no esta en ese dict)
                 nodisp.pop(self._nombre, None)
+                
             elif self._nombre in disp:
                 nodisp[self._nombre] = disp.pop(self._nombre) #ya existia: vuelve a quedar agotado
         return True
@@ -133,8 +138,11 @@ class OpBajaRecurso(Operacion):
             return False
         if self._estabaDisponible: #se devuelve al mismo diccionario del que salio
             self._inventario._inventarioDisponible[nombre] = self._recurso
+            self._inventario._clasificar(self._recurso)
         else:
             self._inventario._Nodisponible[nombre] = self._recurso
+            self._inventario._clasificar(self._recurso)
+
         return True
 
 

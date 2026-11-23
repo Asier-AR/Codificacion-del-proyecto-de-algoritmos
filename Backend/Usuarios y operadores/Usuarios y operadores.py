@@ -46,6 +46,7 @@ class Operador(persona): #clase operador hija de persona
             estado="Desactivado"
             if u is None:
                 print("Usuario no encontrado")
+                return
         #segmento que escribe todos los datos del usuario
         print("Usuario encontrado:") 
         print(f"Nombre: {u._nombre}")
