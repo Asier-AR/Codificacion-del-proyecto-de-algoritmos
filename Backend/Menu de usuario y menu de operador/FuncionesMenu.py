@@ -290,6 +290,7 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
         print("11. Listar recursos ordenados.")
         print("12. Mostrar listado de prestamos")
         print("13. Ver disponibilidad de un recurso")
+        print("14. Registrar devolucion.")
         h = pedirNumero("Opción: ")
 
         if h == 0:
@@ -399,6 +400,23 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
 
         elif h==13:
             verDisponibilidad(sistema)
+        elif h==14:
+            cedulaBuscar=pedirNumero("Porfavor ingrese la cedula del usuario que va a registrar su devolucion ")
+            if cedulaBuscar in usuarios:
+                Us=usuarios[cedulaBuscar]
+                historialUs = historialDe("us", Us._cedula)
+                activos = sistema.prestamosActivos(Us)
+                if not activos:
+                    print("El usuario no tiene préstamos activos.")
+
+                else:
+                    for p in activos:
+                        print(" -", p)
+                    numero = pedirNumero("Número del préstamo a devolver: ")
+                    sistema.devolver(Us, numero, usuarios, historialUs) #la devolucion tambien queda en la pila
+
+            else:
+                print("Cedula no existente o dada de baja: ")
 
         else:
             print("="*50 )
@@ -419,10 +437,9 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
         print("2. Ver disponibilidad de un recurso")
         print("3. Realizar un prestamo")
         print("4. Revisar datos propios")
-        print("5. Devolver un objeto")
-        print("6. Ver historial de usuario")
-        print("7. Deshacer mi última acción")
-        print("8. Ver notificaciones") #NUEVO
+        print("5. Ver historial de usuario")
+        print("6. Deshacer mi última acción")
+        print("7. Ver notificaciones") #NUEVO
         h = pedirNumero("Opción: ")
 
         if h==0:
@@ -444,21 +461,12 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
             sistema.prestar(Us, sede, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
         elif h==4:
             print(f"Nombre: {Us._nombre} \n Apellido: {Us._apellido} \n Nombre de usuario: {Us._nombreUsuario} \n Recursos Reservados: {Us._objetosReservados} \n Sancion: {Us._sancion}")
-        elif h == 5:
-            activos = sistema.prestamosActivos(Us)
-            if not activos:
-                print("No tienes préstamos activos.")
 
-            else:
-                for p in activos:
-                    print(" -", p)
-                numero = pedirNumero("Número del préstamo a devolver: ")
-                sistema.devolver(Us, numero, usuarios, historial) #la devolucion tambien queda en la pila
-        elif h==6:
+        elif h==5:
             sistema.verHistorialUsuario(Us)
-        elif h==7:
+        elif h==6:
             historial.confirmarYDeshacer() #muestra la ultima accion del usuario y pide confirmacion
-        elif h==8: #NUEVO: muestra las notificaciones del buzon (por ejemplo, que lo sacaron de una lista de espera por una sancion)
+        elif h==7: #NUEVO: muestra las notificaciones del buzon (por ejemplo, que lo sacaron de una lista de espera por una sancion)
             if not Us._buzon:
                 print("No tienes notificaciones.")
             else:
