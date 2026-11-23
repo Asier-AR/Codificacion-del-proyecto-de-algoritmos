@@ -7,15 +7,18 @@ class persona: #clase padre que servira como base para todas las demas clases
         self._contraseña = contraseña
 
     def iniciarSesion(self): #permite iniciar Sesion usando el nombre de usuario y la contraseña dandole 4 intentos a la persona
-        for j in range(4):
-            nombreUsuario = input("Ingrese su nombre de usuario: ")
+        while True:
+            nombreUsuario = input("Ingrese su nombre de usuario (escriba 0 en este apartado si desea cancelar): ")
+            if nombreUsuario=="0":
+                print("Cancelando proceso")
+                return False
             contraseña = input("Ingrese su contraseña: ")
             if nombreUsuario == self._nombreUsuario and contraseña == self._contraseña:
                 print(f"Inicio de sesión exitoso, bienvenido {self._nombre} {self._apellido}")
                 return True
-            print(f"Usuario o contraseña no válidos. Intentos restantes: {3 - j}")
-        print("Número de intentos agotados, volviendo al menú")
-        return False
+
+            print(f"Usuario o contraseña no válidos.:")
+
             
 
 
@@ -98,11 +101,9 @@ class Operador(persona): #clase operador hija de persona
             return
         u = registrados.get(cedulaBuscar)
         if u is None:
-            print("No se encontró ningún usuario con esa cédula.")
+            print("No se encontró ningún usuario con esa cédula, puede que no exista o ya este eliminado.")
             return
-        if u._objetosReservados: #NUEVO: si tiene recursos prestados no se puede eliminar, sino nadie podria devolverlos y el recurso quedaria bloqueado
-            print(f"No se puede eliminar: {u._nombre} {u._apellido} aun tiene recursos prestados: {u._objetosReservados}")
-            return
+        
         print(f"¿Desea eliminar a {u._nombre} {u._apellido} (C.C. {u._cedula})?") #se asegura de que el operador halla escrito al usuario correcto y no otro por accidente
         eleccion = input("Digite 1 para confirmar, 2 para cancelar: ")
         if eleccion == "1":
@@ -127,3 +128,10 @@ class Operador(persona): #clase operador hija de persona
         else: #si el usuario no esta sancionado le avisa al operador y no hace nada
             print(f"El usuario {Us._nombre} {Us._apellido} no posee ninguna sancion activa")
             return False
+    def restaurar(self, Cedula, usuarios, baja):
+        if Cedula in baja:
+            Usuario=baja.pop(Cedula)
+            usuarios[Cedula]=Usuario
+            print(f"La cuenta de {Usuario._nombre} ha sido restaurada")
+        else:
+            print("La cuenta de este usuario no esta desactivada o no existe")

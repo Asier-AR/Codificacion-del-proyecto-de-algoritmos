@@ -46,8 +46,7 @@ class SistemaPrestamos:
             print("No puedes realizar préstamos porque tienes una sanción activa.")
             return False
         if nombreRecurso not in disp and nombreRecurso not in nodisp:
-            print("El recurso no esta disponible o no existe en esta sede pero: ")
-            busqueda=self._sistemaSede.buscarEnOtrasSedes(sede, nombreRecurso)
+            self._sistemaSede.buscarEnOtrasSedes(sede, nombreRecurso)
             return False
         if nombreRecurso in nodisp:
             print("No hay unidades disponibles de este recurso en esta sede.")

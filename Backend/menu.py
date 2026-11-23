@@ -94,6 +94,8 @@ while True: #menu principal
             elif cedula==0:
                 print("Cancelando el proceso volviendo al menu")
                 break
+            else: 
+                print("Esta Cedula no esta registrada en el sistema")
 
         if Op is not None and Op.iniciarSesion(): #revisa que se haya iniciado sesion y que el paso de la cedula se haya realizado
             menuOperador(Op, usuarios, operadores, sistema, usuariosBaja)

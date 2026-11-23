@@ -131,10 +131,11 @@ def mostrarInventario(sistema):
 
 
 def elegirSede(sistema):
+    print("="*50, "Elija la sede en la que va a buscar", "="*50)
     nombres = list(sistema._sistemaSede._sedes)
     for i, n in enumerate(nombres, 1):
         print(f"{i}. {n}")
-    num = pedirNumero("Numero de la sede: ")
+    num = pedirNumero("Numero de la sede (el que esta al frente del nombre): ")
     while num < 1 or num > len(nombres):
         num = pedirNumero("Numero no valido, intente de nuevo: ")
     return nombres[num - 1]
@@ -283,7 +284,8 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
         print("4. Sancionar a un usuario")
         print("5. Quitar sancion a un usuario")
         print("6. Añadir un nuevo recurso")
-        print("7. Eliminar un usuario")
+        print("7. Desactiva la cuenta de un usuario")
+        print("8. Reactivar la cuenta de un usuario")
         print("8. Mostar historial de los recursos")
         print("9. Dar de baja un recurso.")
         print("10. Deshacer la última operación.")
@@ -354,11 +356,15 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
                 historial.registrar(OpEliminarPersona("usuario", usuarios, eliminado._cedula, eliminado, usuariosBaja))
 
         elif h==8:
+            cedula=pedirNumero("Ingrese la cedula del usuario: ")
+
+            Op.restaurar(cedula, usuarios, usuariosBaja)
+        elif h==9:
             sede=elegirSede(sistema)
             nombre= input("Ingrese el nombre del recurso: ").strip().lower()
             sistema.verHistorialRecurso(sede, nombre)
 
-        elif h==9:
+        elif h==10:
             sede=elegirSede(sistema)
             inventario=sistema._inv(sede)
             nombre= input("Ingrese el nombre del recurso al que desea dar de baja : ").strip().lower()
@@ -370,10 +376,10 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
                 if inventario.darDeBajaRecurso(nombre): #solo se apila si de verdad se dio de baja
                     historial.registrar(OpBajaRecurso(inventario, rec, estabaDisponible))
 
-        elif h == 10:
+        elif h == 11:
             historial.confirmarYDeshacer() #muestra la ultima operacion y pide confirmacion
         
-        elif h==11:
+        elif h==12:
             
             print("Desea ver los recurso de \n 1. Todas las sedes \n 2. Una sede")
             eleccion=pedirNumero("Escriba el numero que aparece alfrente de la opcion: ")
@@ -394,13 +400,13 @@ def menuOperador(Op, usuarios, operadores, sistema, usuariosBaja): #printea las 
             mostrarRecursos(filas, limite)
             print(f"Ordenado con {algoritmo} en {segundos:.6f} s")
             
-        elif h == 12:
+        elif h == 13:
             limite = pedirNumero("Cuántos objetos mostrar (0 = todos): ")
             informePrestamos(sistema, limite)         
 
-        elif h==13:
-            verDisponibilidad(sistema)
         elif h==14:
+            verDisponibilidad(sistema)
+        elif h==15:
             cedulaBuscar=pedirNumero("Porfavor ingrese la cedula del usuario que va a registrar su devolucion ")
             if cedulaBuscar in usuarios:
                 Us=usuarios[cedulaBuscar]
@@ -456,7 +462,7 @@ def menuUsuario(Us, sistema, usuarios): #es el menu de los usuarios a dia de hoy
         elif h==3:
             sede=elegirSede(sistema)
 
-            Recurso=input("Ingrese el recurso que desea reservar ").strip().lower() #NUEVO: strip quita espacios sobrantes para que no falle por un espacio al final
+            Recurso=input("Ingrese el nombre del recurso que desea reservar ").strip().lower() #NUEVO: strip quita espacios sobrantes para que no falle por un espacio al final
 
             sistema.prestar(Us, sede, Recurso, historial) #se le pasa la pila para que el prestamo (o la espera) se pueda deshacer
         elif h==4:

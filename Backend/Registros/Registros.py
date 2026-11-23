@@ -203,7 +203,6 @@ usuarios = {
     1000001191: usuario("Carolina", "Restrepo", 1000001191, "carolina_r", "carolina123"),
     1000001192: usuario("Mónica", "Espinosa", 1000001192, "monica_e2", "monica123"),
     1000001193: usuario("Liliana", "Uribe", 1000001193, "liliana_u", "liliana123"),
-    1000001194: usuario("Gustavo", "Valencia", 1000001194, "gustavo_v", "gustavo123"),
     1000001195: usuario("Gustavo", "Cortés", 1000001195, "gustavo_c", "gustavo123"),
     1000001196: usuario("Héctor", "Duarte", 1000001196, "hector_d", "hector123"),
     1000001197: usuario("Pablo", "Pineda", 1000001197, "pablo_p", "pablo123", sanciones=True),
@@ -212,8 +211,8 @@ usuarios = {
     1000001200: usuario("Viviana", "Restrepo", 1000001200, "viviana_r", "viviana123"),
     1093887119: usuario("Asier", "Arguinzones", 1093887119, "Grimm", "1020Asier")
 }
-
-usuariosBaja={}
+#Diccionario que guarda a los usuarios eliminados
+usuariosBaja={1000001194: usuario("Gustavo", "Valencia", 1000001194, "gustavo_v", "gustavo123")}
 # 2. DICCIONARIO DE 150 RECURSOS (INVENTARIO)
 # OJO: la cantidad de cada recurso es el STOCK TOTAL. Al cargar el historial (cargarHistorial)
 # se descuentan las unidades de los prestamos que siguen activos.
@@ -259,7 +258,7 @@ sistemaInventario_dict1 = {  # 38 recursos
 }
 
 sistemaInventario_dict2 = {  # 37 recursos
-    "rayuela": libro("rayuela", 6, "Julio Cortázar", "1963", "Literatura"),
+    "rayuela": libro("rayuela", 1, "Julio Cortázar", "1963", "Literatura"),
     "sistemas operativos modernos": libro("sistemas operativos modernos", 6, "Andrew Tanenbaum", "2015", "Ciencias de la Computación"),
     "mecánica de fluidos": libro("mecánica de fluidos", 7, "Frank White", "2008", "Ingeniería y Mecánica"),
     "deep learning": libro("deep learning", 4, "Ian Goodfellow", "2016", "Ciencias de la Computación"),

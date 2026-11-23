@@ -62,9 +62,6 @@ class OpEliminarPersona(Operacion):
         self._baja=diccionarioBaja #guarda el diccionario de usuarios dado de baja o cuya cuenta ya no esta activa
 
     def deshacer(self):
-        if self._clave in self._diccionario: #otra persona se registro con esa cedula mientras tanto
-            print("No se puede deshacer: ya hay otra persona registrada con esa cédula.") #restaurar pisaria sus datos
-            return False
         self._diccionario[self._clave] = self._persona #vuelve a ponerla con la misma cedula
         del self._baja[self._clave]
         return True
